@@ -1,0 +1,959 @@
+[
+  {
+    "title": "High Margin Products",
+    "slug": "high-margin-products",
+    "difficulty": "easy",
+    "description": "List all products where the price is at least double the cost. Display product name and margin (price - cost).",
+    "schema_json": {
+      "products": "id INT, name TEXT, cost FLOAT, price FLOAT"
+    },
+    "sample_data_json": {
+      "products": [
+        { "id": 1, "name": "USB Cable", "cost": 2.0, "price": 5.0 },
+        { "id": 2, "name": "Laptop", "cost": 800.0, "price": 1200.0 },
+        { "id": 3, "name": "Mouse Pad", "cost": 1.5, "price": 4.0 },
+        { "id": 4, "name": "Monitor", "cost": 150.0, "price": 200.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "USB Cable", "margin": 3.0 },
+      { "name": "Mouse Pad", "margin": 2.5 }
+    ],
+    "tags": ["select", "filtering", "arithmetic"]
+  },
+  {
+    "title": "Recent Premium Signups",
+    "slug": "recent-premium-signups",
+    "difficulty": "easy",
+    "description": "Find the names and emails of all users who signed up for a 'Premium' plan after January 1st, 2024.",
+    "schema_json": {
+      "users": "id INT, name TEXT, email TEXT, signup_date DATE, plan_type TEXT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "name": "John Doe", "email": "john@example.com", "signup_date": "2023-12-15", "plan_type": "Free" },
+        { "id": 2, "name": "Jane Smith", "email": "jane@example.com", "signup_date": "2024-02-10", "plan_type": "Premium" },
+        { "id": 3, "name": "Bob Wilson", "email": "bob@example.com", "signup_date": "2024-01-05", "plan_type": "Premium" }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Jane Smith", "email": "jane@example.com" },
+      { "name": "Bob Wilson", "email": "bob@example.com" }
+    ],
+    "tags": ["select", "where", "dates"]
+  },
+  {
+    "title": "Low Inventory Alert",
+    "slug": "low-inventory-alert",
+    "difficulty": "easy",
+    "description": "Identify products with less than 10 units in stock. Sort by stock level ascending.",
+    "schema_json": {
+      "inventory": "product_id INT, product_name TEXT, stock_level INT"
+    },
+    "sample_data_json": {
+      "inventory": [
+        { "product_id": 1, "product_name": "Keyboard", "stock_level": 25 },
+        { "product_id": 2, "product_name": "Webcam", "stock_level": 5 },
+        { "product_id": 3, "product_name": "Headphones", "stock_level": 8 },
+        { "product_id": 4, "product_name": "Speakers", "stock_level": 12 }
+      ]
+    },
+    "expected_output_json": [
+      { "product_id": 2, "product_name": "Webcam", "stock_level": 5 },
+      { "product_id": 3, "product_name": "Headphones", "stock_level": 8 }
+    ],
+    "tags": ["select", "order-by"]
+  },
+  {
+    "title": "Active Banking Accounts",
+    "slug": "active-banking-accounts",
+    "difficulty": "easy",
+    "description": "List all active accounts with a balance greater than 5000. Include account type.",
+    "schema_json": {
+      "accounts": "id INT, type TEXT, balance FLOAT, status TEXT"
+    },
+    "sample_data_json": {
+      "accounts": [
+        { "id": 1, "type": "Savings", "balance": 6000.0, "status": "Active" },
+        { "id": 2, "type": "Checking", "balance": 4500.0, "status": "Active" },
+        { "id": 3, "type": "Savings", "balance": 12000.0, "status": "Inactive" },
+        { "id": 4, "type": "Credit", "balance": 800.0, "status": "Active" }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 1, "type": "Savings", "balance": 6000.0, "status": "Active" }
+    ],
+    "tags": ["select", "where", "multi-condition"]
+  },
+  {
+    "title": "Unread Messages",
+    "slug": "unread-messages",
+    "difficulty": "easy",
+    "description": "Find all messages that have not been read yet. Display sender_id and content.",
+    "schema_json": {
+      "messages": "id INT, sender_id INT, content TEXT, is_read BOOLEAN"
+    },
+    "sample_data_json": {
+      "messages": [
+        { "id": 1, "sender_id": 10, "content": "Hello!", "is_read": true },
+        { "id": 2, "sender_id": 11, "content": "How are you?", "is_read": false },
+        { "id": 3, "sender_id": 10, "content": "Lunch today?", "is_read": false }
+      ]
+    },
+    "expected_output_json": [
+      { "sender_id": 11, "content": "How are you?" },
+      { "sender_id": 10, "content": "Lunch today?" }
+    ],
+    "tags": ["select", "where", "boolean"]
+  },
+  {
+    "title": "Top Rated Pizza Places",
+    "slug": "top-rated-pizza-places",
+    "difficulty": "easy",
+    "description": "Select all restaurants in New York that serve 'Pizza' and have a rating of 4.5 or higher.",
+    "schema_json": {
+      "restaurants": "id INT, name TEXT, cuisine TEXT, city TEXT, rating FLOAT"
+    },
+    "sample_data_json": {
+      "restaurants": [
+        { "id": 1, "name": "Joe's Pizza", "cuisine": "Pizza", "city": "New York", "rating": 4.8 },
+        { "id": 2, "name": "Pasta Place", "cuisine": "Italian", "city": "New York", "rating": 4.6 },
+        { "id": 3, "name": "Pizza Palace", "cuisine": "Pizza", "city": "New York", "rating": 4.2 },
+        { "id": 4, "name": "Ray's Pizza", "cuisine": "Pizza", "city": "New York", "rating": 4.5 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Joe's Pizza", "rating": 4.8 },
+      { "name": "Ray's Pizza", "rating": 4.5 }
+    ],
+    "tags": ["select", "where", "filtering"]
+  },
+  {
+    "title": "Users Without Bio",
+    "slug": "users-without-bio",
+    "difficulty": "easy",
+    "description": "Find the IDs of users who haven't added a bio to their profile yet.",
+    "schema_json": {
+      "users": "id INT, username TEXT, bio TEXT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "username": "alice", "bio": "SQL Lover" },
+        { "id": 2, "username": "bob", "bio": null },
+        { "id": 3, "username": "charlie", "bio": "" }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 2 },
+      { "id": 3 }
+    ],
+    "tags": ["select", "is-null", "empty-string"]
+  },
+  {
+    "title": "High Value Transactions",
+    "slug": "high-value-transactions",
+    "difficulty": "easy",
+    "description": "List all transactions above 5000 in the 'Withdrawal' category.",
+    "schema_json": {
+      "transactions": "id INT, amount FLOAT, category TEXT"
+    },
+    "sample_data_json": {
+      "transactions": [
+        { "id": 1, "amount": 6000.0, "category": "Withdrawal" },
+        { "id": 2, "amount": 1000.0, "category": "Withdrawal" },
+        { "id": 3, "amount": 5500.0, "category": "Deposit" },
+        { "id": 4, "amount": 8000.0, "category": "Withdrawal" }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 1, "amount": 6000.0, "category": "Withdrawal" },
+      { "id": 4, "amount": 8000.0, "category": "Withdrawal" }
+    ],
+    "tags": ["select", "where"]
+  },
+  {
+    "title": "Trial Users Expiring Soon",
+    "slug": "trial-users-expiring-soon",
+    "difficulty": "easy",
+    "description": "Find users whose trial expires before 2024-06-01.",
+    "schema_json": {
+      "trials": "user_id INT, trial_end DATE"
+    },
+    "sample_data_json": {
+      "trials": [
+        { "user_id": 101, "trial_end": "2024-05-15" },
+        { "user_id": 102, "trial_end": "2024-07-01" },
+        { "user_id": 103, "trial_end": "2024-05-20" }
+      ]
+    },
+    "expected_output_json": [
+      { "user_id": 101, "trial_end": "2024-05-15" },
+      { "user_id": 103, "trial_end": "2024-05-20" }
+    ],
+    "tags": ["select", "where", "dates"]
+  },
+  {
+    "title": "Products in Electronics",
+    "slug": "products-in-electronics",
+    "difficulty": "easy",
+    "description": "List all products that belong to the 'Electronics' category and are priced under 500.",
+    "schema_json": {
+      "products": "id INT, name TEXT, category TEXT, price FLOAT"
+    },
+    "sample_data_json": {
+      "products": [
+        { "id": 1, "name": "Phone", "category": "Electronics", "price": 699.0 },
+        { "id": 2, "name": "Headphones", "category": "Electronics", "price": 199.0 },
+        { "id": 3, "name": "T-Shirt", "category": "Apparel", "price": 25.0 },
+        { "id": 4, "name": "Charger", "category": "Electronics", "price": 30.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 2, "name": "Headphones", "price": 199.0 },
+      { "id": 4, "name": "Charger", "price": 30.0 }
+    ],
+    "tags": ["select", "where"]
+  },
+  {
+    "title": "Search for Pizza in Name",
+    "slug": "search-pizza-name",
+    "difficulty": "easy",
+    "description": "Find all restaurants that have 'Pizza' anywhere in their name.",
+    "schema_json": {
+      "restaurants": "id INT, name TEXT"
+    },
+    "sample_data_json": {
+      "restaurants": [
+        { "id": 1, "name": "Pizza Hut" },
+        { "id": 2, "name": "Dominos" },
+        { "id": 3, "name": "Best Pizza Ever" },
+        { "id": 4, "name": "Burger King" }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Pizza Hut" },
+      { "name": "Best Pizza Ever" }
+    ],
+    "tags": ["select", "like", "pattern-matching"]
+  },
+  {
+    "title": "Users in US or Canada",
+    "slug": "users-us-canada",
+    "difficulty": "easy",
+    "description": "Select users who are located in either 'USA' or 'Canada'.",
+    "schema_json": {
+      "users": "id INT, country TEXT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "country": "USA" },
+        { "id": 2, "country": "UK" },
+        { "id": 3, "country": "Canada" },
+        { "id": 4, "country": "Germany" }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 1, "country": "USA" },
+      { "id": 3, "country": "Canada" }
+    ],
+    "tags": ["select", "in-operator"]
+  },
+  {
+    "title": "Most Recent Orders",
+    "slug": "most-recent-orders",
+    "difficulty": "easy",
+    "description": "Find the 5 most recent orders based on order_date.",
+    "schema_json": {
+      "orders": "id INT, user_id INT, order_date DATE"
+    },
+    "sample_data_json": {
+      "orders": [
+        { "id": 1, "user_id": 10, "order_date": "2024-01-01" },
+        { "id": 2, "user_id": 11, "order_date": "2024-01-05" },
+        { "id": 3, "user_id": 12, "order_date": "2024-01-10" },
+        { "id": 4, "user_id": 10, "order_date": "2024-01-15" },
+        { "id": 5, "user_id": 13, "order_date": "2024-01-20" },
+        { "id": 6, "user_id": 14, "order_date": "2024-01-25" }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 6, "order_date": "2024-01-25" },
+      { "id": 5, "order_date": "2024-01-20" },
+      { "id": 4, "order_date": "2024-01-15" },
+      { "id": 3, "order_date": "2024-01-10" },
+      { "id": 2, "order_date": "2024-01-05" }
+    ],
+    "tags": ["select", "order-by", "limit"]
+  },
+  {
+    "title": "Orders Between Range",
+    "slug": "orders-between-range",
+    "difficulty": "easy",
+    "description": "List all orders where the total amount is between 50 and 150 inclusive.",
+    "schema_json": {
+      "orders": "id INT, total_amount FLOAT"
+    },
+    "sample_data_json": {
+      "orders": [
+        { "id": 1, "total_amount": 25.0 },
+        { "id": 2, "total_amount": 75.0 },
+        { "id": 3, "total_amount": 150.0 },
+        { "id": 4, "total_amount": 200.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 2, "total_amount": 75.0 },
+      { "id": 3, "total_amount": 150.0 }
+    ],
+    "tags": ["select", "between"]
+  },
+  {
+    "title": "Savings Accounts with Interest",
+    "slug": "savings-interest",
+    "difficulty": "easy",
+    "description": "Calculate a 5% interest bonus for all 'Savings' accounts and show the potential new balance.",
+    "schema_json": {
+      "accounts": "id INT, type TEXT, balance FLOAT"
+    },
+    "sample_data_json": {
+      "accounts": [
+        { "id": 1, "type": "Savings", "balance": 1000.0 },
+        { "id": 2, "type": "Checking", "balance": 500.0 },
+        { "id": 3, "type": "Savings", "balance": 2000.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 1, "new_balance": 1050.0 },
+      { "id": 3, "new_balance": 2100.0 }
+    ],
+    "tags": ["select", "arithmetic", "alias"]
+  },
+  {
+    "title": "Total Revenue per Category",
+    "slug": "revenue-per-category",
+    "difficulty": "medium",
+    "description": "Calculate the total revenue generated for each product category.",
+    "schema_json": {
+      "products": "id INT, name TEXT, category TEXT",
+      "order_items": "id INT, product_id INT, quantity INT, price_at_purchase FLOAT"
+    },
+    "sample_data_json": {
+      "products": [
+        { "id": 1, "name": "Phone", "category": "Electronics" },
+        { "id": 2, "name": "Shirt", "category": "Apparel" }
+      ],
+      "order_items": [
+        { "id": 1, "product_id": 1, "quantity": 1, "price_at_purchase": 500.0 },
+        { "id": 2, "product_id": 1, "quantity": 2, "price_at_purchase": 450.0 },
+        { "id": 3, "product_id": 2, "quantity": 5, "price_at_purchase": 20.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "category": "Electronics", "total_revenue": 1400.0 },
+      { "category": "Apparel", "total_revenue": 100.0 }
+    ],
+    "tags": ["joins", "group-by", "aggregation"]
+  },
+  {
+    "title": "Customers with High Order Count",
+    "slug": "high-order-count-customers",
+    "difficulty": "medium",
+    "description": "Find customers who have placed more than 3 orders. Show their name and order count.",
+    "schema_json": {
+      "customers": "id INT, name TEXT",
+      "orders": "id INT, customer_id INT"
+    },
+    "sample_data_json": {
+      "customers": [
+        { "id": 1, "name": "Alice" },
+        { "id": 2, "name": "Bob" }
+      ],
+      "orders": [
+        { "id": 1, "customer_id": 1 },
+        { "id": 2, "customer_id": 1 },
+        { "id": 3, "customer_id": 1 },
+        { "id": 4, "customer_id": 1 },
+        { "id": 5, "customer_id": 2 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Alice", "order_count": 4 }
+    ],
+    "tags": ["joins", "group-by", "having"]
+  },
+  {
+    "title": "Average Transaction per Account Type",
+    "slug": "avg-transaction-type",
+    "difficulty": "medium",
+    "description": "Calculate the average transaction amount for each account type.",
+    "schema_json": {
+      "accounts": "id INT, type TEXT",
+      "transactions": "id INT, account_id INT, amount FLOAT"
+    },
+    "sample_data_json": {
+      "accounts": [
+        { "id": 1, "type": "Savings" },
+        { "id": 2, "type": "Checking" }
+      ],
+      "transactions": [
+        { "id": 1, "account_id": 1, "amount": 100.0 },
+        { "id": 2, "account_id": 1, "amount": 200.0 },
+        { "id": 3, "account_id": 2, "amount": 50.0 },
+        { "id": 4, "account_id": 2, "amount": 150.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "type": "Savings", "avg_amount": 150.0 },
+      { "type": "Checking", "avg_amount": 100.0 }
+    ],
+    "tags": ["joins", "group-by", "average"]
+  },
+  {
+    "title": "Most Liked Post",
+    "slug": "most-liked-post",
+    "difficulty": "medium",
+    "description": "Find the content of the post that has the highest number of likes.",
+    "schema_json": {
+      "posts": "id INT, content TEXT",
+      "likes": "id INT, post_id INT, user_id INT"
+    },
+    "sample_data_json": {
+      "posts": [
+        { "id": 1, "content": "SQL is fun!" },
+        { "id": 2, "content": "Hello World" }
+      ],
+      "likes": [
+        { "id": 1, "post_id": 1, "user_id": 101 },
+        { "id": 2, "post_id": 1, "user_id": 102 },
+        { "id": 3, "post_id": 2, "user_id": 101 }
+      ]
+    },
+    "expected_output_json": [
+      { "content": "SQL is fun!", "like_count": 2 }
+    ],
+    "tags": ["joins", "group-by", "order-by", "limit"]
+  },
+  {
+    "title": "MRR per Country",
+    "slug": "mrr-per-country",
+    "difficulty": "medium",
+    "description": "Calculate Monthly Recurring Revenue (MRR) for each country based on active subscriptions.",
+    "schema_json": {
+      "users": "id INT, country TEXT",
+      "subscriptions": "id INT, user_id INT, monthly_price FLOAT, status TEXT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "country": "USA" },
+        { "id": 2, "country": "Canada" },
+        { "id": 3, "country": "USA" }
+      ],
+      "subscriptions": [
+        { "id": 1, "user_id": 1, "monthly_price": 20.0, "status": "Active" },
+        { "id": 2, "user_id": 2, "monthly_price": 15.0, "status": "Active" },
+        { "id": 3, "user_id": 3, "monthly_price": 20.0, "status": "Inactive" }
+      ]
+    },
+    "expected_output_json": [
+      { "country": "USA", "mrr": 20.0 },
+      { "country": "Canada", "mrr": 15.0 }
+    ],
+    "tags": ["joins", "group-by", "sum"]
+  },
+  {
+    "title": "Orders per Restaurant",
+    "slug": "orders-per-restaurant",
+    "difficulty": "medium",
+    "description": "Count the number of orders for each restaurant, including those with zero orders.",
+    "schema_json": {
+      "restaurants": "id INT, name TEXT",
+      "orders": "id INT, restaurant_id INT"
+    },
+    "sample_data_json": {
+      "restaurants": [
+        { "id": 1, "name": "Burger Joint" },
+        { "id": 2, "name": "Sushi Bar" }
+      ],
+      "orders": [
+        { "id": 101, "restaurant_id": 1 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Burger Joint", "order_count": 1 },
+      { "name": "Sushi Bar", "order_count": 0 }
+    ],
+    "tags": ["left-join", "group-by", "count"]
+  },
+  {
+    "title": "Accounts with No Transactions",
+    "slug": "no-transactions",
+    "difficulty": "medium",
+    "description": "Find all accounts that have never made a transaction.",
+    "schema_json": {
+      "accounts": "id INT, account_holder TEXT",
+      "transactions": "id INT, account_id INT"
+    },
+    "sample_data_json": {
+      "accounts": [
+        { "id": 1, "account_holder": "Alice" },
+        { "id": 2, "account_holder": "Bob" }
+      ],
+      "transactions": [
+        { "id": 100, "account_id": 1 }
+      ]
+    },
+    "expected_output_json": [
+      { "id": 2, "account_holder": "Bob" }
+    ],
+    "tags": ["left-join", "is-null", "subquery"]
+  },
+  {
+    "title": "Top Selling Category in each Month",
+    "slug": "top-selling-category-month",
+    "difficulty": "medium",
+    "description": "Find the total quantity sold for each category in the month of May 2024.",
+    "schema_json": {
+      "products": "id INT, category TEXT",
+      "orders": "id INT, order_date DATE",
+      "order_items": "id INT, order_id INT, product_id INT, quantity INT"
+    },
+    "sample_data_json": {
+      "products": [
+        { "id": 1, "category": "Electronics" },
+        { "id": 2, "category": "Apparel" }
+      ],
+      "orders": [
+        { "id": 10, "order_date": "2024-05-10" },
+        { "id": 11, "order_date": "2024-05-20" },
+        { "id": 12, "order_date": "2024-06-01" }
+      ],
+      "order_items": [
+        { "id": 1, "order_id": 10, "product_id": 1, "quantity": 2 },
+        { "id": 2, "order_id": 11, "product_id": 2, "quantity": 5 },
+        { "id": 3, "order_id": 12, "product_id": 1, "quantity": 10 }
+      ]
+    },
+    "expected_output_json": [
+      { "category": "Apparel", "total_quantity": 5 },
+      { "category": "Electronics", "total_quantity": 2 }
+    ],
+    "tags": ["joins", "group-by", "dates"]
+  },
+  {
+    "title": "Delivery Time Analysis",
+    "slug": "delivery-time-analysis",
+    "difficulty": "medium",
+    "description": "Calculate the average delivery time (in minutes) for each driver.",
+    "schema_json": {
+      "drivers": "id INT, name TEXT",
+      "deliveries": "id INT, driver_id INT, order_placed TIMESTAMP, order_delivered TIMESTAMP"
+    },
+    "sample_data_json": {
+      "drivers": [
+        { "id": 1, "name": "Sam" },
+        { "id": 2, "name": "Alex" }
+      ],
+      "deliveries": [
+        { "id": 1, "driver_id": 1, "order_placed": "2024-01-01 12:00:00", "order_delivered": "2024-01-01 12:30:00" },
+        { "id": 2, "driver_id": 1, "order_placed": "2024-01-01 13:00:00", "order_delivered": "2024-01-01 13:45:00" },
+        { "id": 3, "driver_id": 2, "order_placed": "2024-01-01 12:00:00", "order_delivered": "2024-01-01 12:20:00" }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Sam", "avg_minutes": 37.5 },
+      { "name": "Alex", "avg_minutes": 20.0 }
+    ],
+    "tags": ["joins", "group-by", "timestamps"]
+  },
+  {
+    "title": "Churned Users Month over Month",
+    "slug": "churn-users-month",
+    "difficulty": "medium",
+    "description": "Count how many users canceled their subscription in May 2024.",
+    "schema_json": {
+      "subscriptions": "id INT, user_id INT, cancel_date DATE"
+    },
+    "sample_data_json": {
+      "subscriptions": [
+        { "id": 1, "user_id": 101, "cancel_date": "2024-05-15" },
+        { "id": 2, "user_id": 102, "cancel_date": "2024-05-20" },
+        { "id": 3, "user_id": 103, "cancel_date": "2024-04-10" },
+        { "id": 4, "user_id": 104, "cancel_date": null }
+      ]
+    },
+    "expected_output_json": [
+      { "churn_count": 2 }
+    ],
+    "tags": ["where", "dates", "count"]
+  },
+  {
+    "title": "Highest Priced Product in each Category",
+    "slug": "highest-priced-category",
+    "difficulty": "medium",
+    "description": "Find the name and price of the most expensive product in each category.",
+    "schema_json": {
+      "products": "id INT, name TEXT, price FLOAT, category TEXT"
+    },
+    "sample_data_json": {
+      "products": [
+        { "id": 1, "name": "Laptop", "price": 1200.0, "category": "Electronics" },
+        { "id": 2, "name": "Phone", "price": 800.0, "category": "Electronics" },
+        { "id": 3, "name": "Boots", "price": 150.0, "category": "Footwear" },
+        { "id": 4, "name": "Sneakers", "price": 200.0, "category": "Footwear" }
+      ]
+    },
+    "expected_output_json": [
+      { "category": "Electronics", "name": "Laptop", "price": 1200.0 },
+      { "category": "Footwear", "name": "Sneakers", "price": 200.0 }
+    ],
+    "tags": ["subquery", "group-by", "max"]
+  },
+  {
+    "title": "Post Interaction Rate",
+    "slug": "post-interaction-rate",
+    "difficulty": "medium",
+    "description": "Calculate the interaction rate (likes + comments) for each post.",
+    "schema_json": {
+      "posts": "id INT, title TEXT",
+      "likes": "post_id INT",
+      "comments": "post_id INT"
+    },
+    "sample_data_json": {
+      "posts": [
+        { "id": 1, "title": "First Post" },
+        { "id": 2, "title": "Second Post" }
+      ],
+      "likes": [
+        { "post_id": 1 }, { "post_id": 1 }
+      ],
+      "comments": [
+        { "post_id": 1 }, { "post_id": 2 }
+      ]
+    },
+    "expected_output_json": [
+      { "title": "First Post", "interactions": 3 },
+      { "title": "Second Post", "interactions": 1 }
+    ],
+    "tags": ["left-join", "group-by", "aggregation"]
+  },
+  {
+    "title": "Subscription Growth Month over Month",
+    "slug": "subscription-growth-mom",
+    "difficulty": "medium",
+    "description": "Compare new subscriptions in January 2024 vs February 2024.",
+    "schema_json": {
+      "subscriptions": "id INT, signup_date DATE"
+    },
+    "sample_data_json": {
+      "subscriptions": [
+        { "id": 1, "signup_date": "2024-01-15" },
+        { "id": 2, "signup_date": "2024-01-20" },
+        { "id": 3, "signup_date": "2024-02-05" },
+        { "id": 4, "signup_date": "2024-02-10" },
+        { "id": 5, "signup_date": "2024-02-15" }
+      ]
+    },
+    "expected_output_json": [
+      { "month": "2024-01", "new_subs": 2 },
+      { "month": "2024-02", "new_subs": 3 }
+    ],
+    "tags": ["group-by", "date-trunc"]
+  },
+  {
+    "title": "Users with Mutual Friends",
+    "slug": "mutual-friends",
+    "difficulty": "medium",
+    "description": "Count how many friends User 1 and User 2 have in common.",
+    "schema_json": {
+      "friends": "user_id INT, friend_id INT"
+    },
+    "sample_data_json": {
+      "friends": [
+        { "user_id": 1, "friend_id": 3 },
+        { "user_id": 1, "friend_id": 4 },
+        { "user_id": 1, "friend_id": 5 },
+        { "user_id": 2, "friend_id": 3 },
+        { "user_id": 2, "friend_id": 4 },
+        { "user_id": 2, "friend_id": 6 }
+      ]
+    },
+    "expected_output_json": [
+      { "mutual_count": 2 }
+    ],
+    "tags": ["joins", "filtering"]
+  },
+  {
+    "title": "Total Amount Spent by User",
+    "slug": "total-spent-user",
+    "difficulty": "medium",
+    "description": "List the total amount spent by each user. Include those who spent nothing.",
+    "schema_json": {
+      "users": "id INT, name TEXT",
+      "orders": "id INT, user_id INT, amount FLOAT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "name": "Alice" },
+        { "id": 2, "name": "Bob" },
+        { "id": 3, "name": "Charlie" }
+      ],
+      "orders": [
+        { "id": 10, "user_id": 1, "amount": 100.0 },
+        { "id": 11, "user_id": 1, "amount": 50.0 },
+        { "id": 12, "user_id": 2, "amount": 200.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Alice", "total_spent": 150.0 },
+      { "name": "Bob", "total_spent": 200.0 },
+      { "name": "Charlie", "total_spent": 0.0 }
+    ],
+    "tags": ["left-join", "group-by", "coalesce"]
+  },
+  {
+    "title": "Top 3 Selling Products per Category",
+    "slug": "top-3-products-category",
+    "difficulty": "hard",
+    "description": "Find the top 3 selling products (by quantity) within each category.",
+    "schema_json": {
+      "products": "id INT, name TEXT, category TEXT",
+      "order_items": "product_id INT, quantity INT"
+    },
+    "sample_data_json": {
+      "products": [
+        { "id": 1, "name": "P1", "category": "A" },
+        { "id": 2, "name": "P2", "category": "A" },
+        { "id": 3, "name": "P3", "category": "A" },
+        { "id": 4, "name": "P4", "category": "A" },
+        { "id": 5, "name": "P5", "category": "B" }
+      ],
+      "order_items": [
+        { "product_id": 1, "quantity": 10 },
+        { "product_id": 2, "quantity": 20 },
+        { "product_id": 3, "quantity": 30 },
+        { "product_id": 4, "quantity": 5 },
+        { "product_id": 5, "quantity": 50 }
+      ]
+    },
+    "expected_output_json": [
+      { "category": "A", "name": "P3", "total_sold": 30, "rank": 1 },
+      { "category": "A", "name": "P2", "total_sold": 20, "rank": 2 },
+      { "category": "A", "name": "P1", "total_sold": 10, "rank": 3 },
+      { "category": "B", "name": "P5", "total_sold": 50, "rank": 1 }
+    ],
+    "tags": ["window-functions", "rank", "ctes"]
+  },
+  {
+    "title": "Cumulative Revenue per Day",
+    "slug": "cumulative-revenue-day",
+    "difficulty": "hard",
+    "description": "Calculate the cumulative revenue for each day in January 2024.",
+    "schema_json": {
+      "orders": "id INT, order_date DATE, amount FLOAT"
+    },
+    "sample_data_json": {
+      "orders": [
+        { "id": 1, "order_date": "2024-01-01", "amount": 100.0 },
+        { "id": 2, "order_date": "2024-01-01", "amount": 50.0 },
+        { "id": 3, "order_date": "2024-01-02", "amount": 200.0 },
+        { "id": 4, "order_date": "2024-01-03", "amount": 150.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "order_date": "2024-01-01", "daily_revenue": 150.0, "cumulative_revenue": 150.0 },
+      { "order_date": "2024-01-02", "daily_revenue": 200.0, "cumulative_revenue": 350.0 },
+      { "order_date": "2024-01-03", "daily_revenue": 150.0, "cumulative_revenue": 500.0 }
+    ],
+    "tags": ["window-functions", "sum-over", "ctes"]
+  },
+  {
+    "title": "Monthly Retention Rate",
+    "slug": "monthly-retention-rate",
+    "difficulty": "hard",
+    "description": "Calculate the percentage of users who placed an order in January and returned to place another order in February.",
+    "schema_json": {
+      "orders": "id INT, user_id INT, order_date DATE"
+    },
+    "sample_data_json": {
+      "orders": [
+        { "id": 1, "user_id": 1, "order_date": "2024-01-10" },
+        { "id": 2, "user_id": 2, "order_date": "2024-01-15" },
+        { "id": 3, "user_id": 3, "order_date": "2024-01-20" },
+        { "id": 4, "user_id": 1, "order_date": "2024-02-05" },
+        { "id": 5, "user_id": 2, "order_date": "2024-02-10" }
+      ]
+    },
+    "expected_output_json": [
+      { "jan_users": 3, "retained_users": 2, "retention_rate": 66.67 }
+    ],
+    "tags": ["ctes", "self-join", "arithmetic"]
+  },
+  {
+    "title": "Peak Hour for Food Delivery",
+    "slug": "peak-hour-food",
+    "difficulty": "hard",
+    "description": "Identify the hour of the day with the highest number of orders across all days.",
+    "schema_json": {
+      "orders": "id INT, order_time TIMESTAMP"
+    },
+    "sample_data_json": {
+      "orders": [
+        { "id": 1, "order_time": "2024-01-01 12:30:00" },
+        { "id": 2, "order_time": "2024-01-01 13:00:00" },
+        { "id": 3, "order_time": "2024-01-02 12:15:00" },
+        { "id": 4, "order_time": "2024-01-02 18:00:00" }
+      ]
+    },
+    "expected_output_json": [
+      { "hour": 12, "order_count": 2 }
+    ],
+    "tags": ["extract", "group-by", "order-by", "limit"]
+  },
+  {
+    "title": "User Engagement Ranking",
+    "slug": "user-engagement-ranking",
+    "difficulty": "hard",
+    "description": "Rank users based on their total activity (posts + likes + comments).",
+    "schema_json": {
+      "users": "id INT, username TEXT",
+      "posts": "user_id INT",
+      "likes": "user_id INT",
+      "comments": "user_id INT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "username": "Alice" },
+        { "id": 2, "username": "Bob" }
+      ],
+      "posts": [{ "user_id": 1 }, { "user_id": 1 }],
+      "likes": [{ "user_id": 1 }, { "user_id": 2 }],
+      "comments": [{ "user_id": 2 }, { "user_id": 2 }]
+    },
+    "expected_output_json": [
+      { "username": "Bob", "total_activity": 3, "rank": 1 },
+      { "username": "Alice", "total_activity": 3, "rank": 1 }
+    ],
+    "tags": ["window-functions", "rank", "unions"]
+  },
+  {
+    "title": "Customer Lifetime Value (CLV)",
+    "slug": "clv-analysis",
+    "difficulty": "hard",
+    "description": "Calculate the total revenue from each user and rank them into tiers: 'Platinum' (>= 1000), 'Gold' (>= 500), 'Silver' (< 500).",
+    "schema_json": {
+      "users": "id INT, name TEXT",
+      "orders": "id INT, user_id INT, amount FLOAT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "name": "Alice" },
+        { "id": 2, "name": "Bob" },
+        { "id": 3, "name": "Charlie" }
+      ],
+      "orders": [
+        { "id": 10, "user_id": 1, "amount": 1200.0 },
+        { "id": 11, "user_id": 2, "amount": 600.0 },
+        { "id": 12, "user_id": 3, "amount": 100.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "Alice", "total_spent": 1200.0, "tier": "Platinum" },
+      { "name": "Bob", "total_spent": 600.0, "tier": "Gold" },
+      { "name": "Charlie", "total_spent": 100.0, "tier": "Silver" }
+    ],
+    "tags": ["case-when", "group-by", "aggregation"]
+  },
+  {
+    "title": "Frequently Bought Together",
+    "slug": "frequently-bought-together",
+    "difficulty": "hard",
+    "description": "Find pairs of products that are most frequently bought together in the same order.",
+    "schema_json": {
+      "order_items": "order_id INT, product_id INT"
+    },
+    "sample_data_json": {
+      "order_items": [
+        { "order_id": 1, "product_id": 101 },
+        { "order_id": 1, "product_id": 102 },
+        { "order_id": 2, "product_id": 101 },
+        { "order_id": 2, "product_id": 102 },
+        { "order_id": 3, "product_id": 101 },
+        { "order_id": 3, "product_id": 103 }
+      ]
+    },
+    "expected_output_json": [
+      { "p1": 101, "p2": 102, "frequency": 2 }
+    ],
+    "tags": ["self-join", "group-by", "filtering"]
+  },
+  {
+    "title": "Consecutive Day Login Streak",
+    "slug": "consecutive-login-streak",
+    "difficulty": "hard",
+    "description": "Find the longest login streak (consecutive days) for user ID 1.",
+    "schema_json": {
+      "logins": "user_id INT, login_date DATE"
+    },
+    "sample_data_json": {
+      "logins": [
+        { "user_id": 1, "login_date": "2024-01-01" },
+        { "user_id": 1, "login_date": "2024-01-02" },
+        { "user_id": 1, "login_date": "2024-01-03" },
+        { "user_id": 1, "login_date": "2024-01-05" },
+        { "user_id": 1, "login_date": "2024-01-06" }
+      ]
+    },
+    "expected_output_json": [
+      { "max_streak": 3 }
+    ],
+    "tags": ["window-functions", "gaps-and-islands", "ctes"]
+  },
+  {
+    "title": "Running Balance per User",
+    "slug": "running-balance-user",
+    "difficulty": "hard",
+    "description": "Calculate the running balance for each user over time based on their transactions.",
+    "schema_json": {
+      "transactions": "id INT, user_id INT, amount FLOAT, created_at TIMESTAMP"
+    },
+    "sample_data_json": {
+      "transactions": [
+        { "id": 1, "user_id": 1, "amount": 100.0, "created_at": "2024-01-01 10:00:00" },
+        { "id": 2, "user_id": 1, "amount": -20.0, "created_at": "2024-01-01 11:00:00" },
+        { "id": 3, "user_id": 2, "amount": 500.0, "created_at": "2024-01-01 10:00:00" }
+      ]
+    },
+    "expected_output_json": [
+      { "user_id": 1, "amount": 100.0, "running_balance": 100.0 },
+      { "user_id": 1, "amount": -20.0, "running_balance": 80.0 },
+      { "user_id": 2, "amount": 500.0, "running_balance": 500.0 }
+    ],
+    "tags": ["window-functions", "sum-over"]
+  },
+  {
+    "title": "Top Percentile Spenders",
+    "slug": "top-percentile-spenders",
+    "difficulty": "hard",
+    "description": "Identify users who are in the top 10% of total spenders.",
+    "schema_json": {
+      "users": "id INT, name TEXT",
+      "orders": "user_id INT, amount FLOAT"
+    },
+    "sample_data_json": {
+      "users": [
+        { "id": 1, "name": "U1" }, { "id": 2, "name": "U2" }, { "id": 3, "name": "U3" },
+        { "id": 4, "name": "U4" }, { "id": 5, "name": "U5" }, { "id": 6, "name": "U6" },
+        { "id": 7, "name": "U7" }, { "id": 8, "name": "U8" }, { "id": 9, "name": "U9" },
+        { "id": 10, "name": "U10" }
+      ],
+      "orders": [
+        { "user_id": 1, "amount": 1000 }, { "user_id": 2, "amount": 900 },
+        { "user_id": 3, "amount": 800 }, { "user_id": 4, "amount": 700 }
+      ]
+    },
+    "expected_output_json": [
+      { "name": "U1", "total_spent": 1000.0 }
+    ],
+    "tags": ["window-functions", "percent_rank", "ctes"]
+  }
+]

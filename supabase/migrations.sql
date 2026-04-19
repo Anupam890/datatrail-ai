@@ -219,7 +219,7 @@ ALTER TABLE progress ENABLE ROW LEVEL SECURITY;
 -- Policies
 CREATE POLICY "Public problems are viewable by everyone" ON problems FOR SELECT USING (true);
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Submissions are viewable by owner" ON submissions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid()::text = user_id);
+CREATE POLICY "Submissions are viewable by owner" ON submissions FOR SELECT USING (auth.uid()::text = user_id);
 CREATE POLICY "Lessons are viewable by everyone" ON lessons FOR SELECT USING (true);
-CREATE POLICY "Progress is viewable by owner" ON progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Progress is viewable by owner" ON progress FOR SELECT USING (auth.uid()::text = user_id);
