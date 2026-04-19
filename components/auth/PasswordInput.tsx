@@ -42,7 +42,7 @@ export default function PasswordInput({ error, label, className, value, ...props
            <Input
              type={show ? "text" : "password"}
              className={cn(
-               "h-6 w-full p-0 border-0 bg-transparent focus-visible:ring-0 placeholder:opacity-0 transition-opacity",
+               "h-7 w-full p-0 border-0 bg-transparent focus-visible:ring-0 placeholder:opacity-0 transition-opacity text-base",
                className
              )}
              onFocus={() => setIsFocused(true)}

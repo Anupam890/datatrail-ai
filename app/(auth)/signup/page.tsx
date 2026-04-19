@@ -50,13 +50,13 @@ export default function SignupPage() {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       });
 
       if (signUpError) {
         setError(signUpError.message || "Registration Failed");
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (err) {
       setError("System handshake failure.");
@@ -168,9 +168,7 @@ export default function SignupPage() {
           <div className="w-full border-t border-[#1F2937]" />
         </div>
         <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-          <span className="bg-[#111827] px-4 text-muted-foreground/60">
-            Distributed Auth
-          </span>
+          <span className="bg-[#111827] px-4 text-muted-foreground/60">Or continue with</span>
         </div>
       </div>
 

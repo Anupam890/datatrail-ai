@@ -31,13 +31,13 @@ export default function LoginPage() {
       const { error: signInError } = await signIn.email({
         email: formData.email,
         password: formData.password,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       });
 
       if (signInError) {
         setError(signInError.message || "Invalid credentials");
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (err) {
       setError("An unexpected error occurred.");
@@ -109,7 +109,7 @@ export default function LoginPage() {
           <div className="w-full border-t border-[#1F2937]" />
         </div>
         <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-          <span className="bg-[#111827] px-4 text-muted-foreground/60">Distributed Auth</span>
+          <span className="bg-[#111827] px-4 text-muted-foreground/60">Or continue with</span>
         </div>
       </div>
 
