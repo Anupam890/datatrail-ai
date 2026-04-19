@@ -1,83 +1,116 @@
 "use client";
 
-import { useSession, signOut } from "@/lib/auth-client";
-import { ThemeToggle } from "./theme-toggle";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { usePathname, useRouter } from "next/navigation";
+import { 
+  Bell, 
+  Search, 
+  Settings, 
+  LogOut, 
+  User as UserIcon,
+  HelpCircle,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sidebar } from "./sidebar";
-import { Menu, LogOut, User } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
+import { motion } from "framer-motion";
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const pathname = usePathname();
   const router = useRouter();
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const userName = session?.user?.name || "User";
-  const initials = userName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const { data: session } = authClient.useSession();
+  
+  const getPageTitle = (path: string) => {
+    const segments = path.split("/").filter(Boolean);
+    if (segments.length === 0) return "Dashboard";
+    const lastSegment = segments[segments.length - 1];
+    return lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1);
+  };
 
-  async function handleSignOut() {
-    await signOut();
-    router.push("/login");
-  }
+  const handleLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login");
+        },
+      },
+    });
+  };
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-card px-4 lg:px-6">
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetTrigger
-          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9 cursor-pointer lg:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
-          <Sidebar open onClose={() => setSheetOpen(false)} />
-        </SheetContent>
-      </Sheet>
+    <nav className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-[#1F2937] bg-[#0B0F19]/80 px-4 backdrop-blur-md md:px-8">
+      <div className="flex items-center gap-4">
+        {/* Page Title - hidden on small mobile if sidebar toggle is there */}
+        <h1 className="hidden sm:block text-xl font-semibold text-white ml-10 md:ml-0">
+          {getPageTitle(pathname)}
+        </h1>
+      </div>
 
-      <div className="flex-1" />
+      <div className="flex items-center gap-4 lg:gap-6">
+        {/* Search Bar */}
+        <div className="hidden lg:flex relative w-64">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input 
+            placeholder="Search resources..." 
+            className="h-9 w-full bg-slate-900 border-slate-800 pl-9 text-xs focus:ring-indigo-500/20"
+          />
+        </div>
 
-      <ThemeToggle />
-
-      <DropdownMenu>
-        <DropdownMenuTrigger className="relative inline-flex items-center justify-center h-9 w-9 rounded-full cursor-pointer hover:bg-accent transition-colors">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <div className="flex items-center gap-2 p-2">
-            <div className="flex flex-col space-y-0.5">
-              <p className="text-sm font-medium">{userName}</p>
-              <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
-            </div>
-          </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </header>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800">
+            <Bell className="h-5 w-5" />
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger className="relative h-9 w-9 rounded-full border border-[#1F2937] p-0 overflow-hidden group cursor-pointer">
+                <Avatar className="h-full w-full">
+                  <AvatarImage src={session?.user?.image || undefined} alt="User" />
+                  <AvatarFallback className="bg-indigo-600 text-white font-bold">
+                    {session?.user?.name?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-[#111827] border-[#1F2937] text-white">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
+                  <p className="text-xs leading-none text-slate-400">{session?.user?.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-[#1F2937]" />
+              <DropdownMenuItem className="focus:bg-slate-800 focus:text-white cursor-pointer" onClick={() => router.push("/profile")}>
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-slate-800 focus:text-white cursor-pointer" onClick={() => router.push("/settings")}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-slate-800 focus:text-white cursor-pointer">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>Support</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-[#1F2937]" />
+              <DropdownMenuItem 
+                className="focus:bg-red-500/10 focus:text-red-400 text-red-400 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </nav>
   );
 }

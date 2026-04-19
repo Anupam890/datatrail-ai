@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import AnimatedText from "../ui/AnimatedText";
 import { ChevronRight, Play } from "lucide-react";
+import Link from "next/link";
 
 export default function Hero() {
   return (

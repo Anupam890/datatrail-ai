@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import FadeIn from "../ui/FadeIn";
 import { ArrowRight, Zap } from "lucide-react";
-import Link from "next/Link"
+import Link from "next/link"
 
 export default function CTA() {
   return (

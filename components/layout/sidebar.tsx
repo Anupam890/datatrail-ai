@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -13,13 +12,13 @@ import {
   ChevronRight,
   Database,
   Menu,
-  X
 } from "lucide-react";
 import { NavItem } from "./NavItem";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useLayoutStore } from "@/store/use-layout-store";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -30,7 +29,7 @@ const navItems = [
 ];
 
 export function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isSidebarCollapsed: isCollapsed, toggleSidebar } = useLayoutStore();
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-[#111827] border-r border-[#1F2937]">
@@ -70,7 +69,7 @@ export function Sidebar() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggleSidebar}
           className="w-full justify-center text-slate-400 hover:text-white hover:bg-slate-800"
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : (
@@ -100,10 +99,8 @@ export function Sidebar() {
       {/* Mobile Sidebar (Sheet) */}
       <div className="md:hidden">
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="fixed top-3 left-4 z-50 text-slate-400">
+          <SheetTrigger className="fixed top-3 left-4 z-50 text-slate-400 inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer">
               <Menu className="h-6 w-6" />
-            </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-[280px] bg-[#111827] border-r-[#1F2937]">
             <div className="flex flex-col h-full">
