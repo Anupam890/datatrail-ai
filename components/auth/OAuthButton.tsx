@@ -32,7 +32,7 @@ export default function OAuthButton() {
     try {
       await signIn.social({
         provider,
-        callbackURL: "/dashboard",
+        callbackURL: "/arena",
       });
     } catch (error) {
       console.error(error);

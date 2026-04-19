@@ -99,10 +99,10 @@ const lessonsData: Record<string, {
   },
 };
 
-export default function LessonDetailPage() {
+export default function LabTopicPage() {
   const params = useParams();
-  const slug = params.slug as string;
-  const lesson = lessonsData[slug];
+  const topicSlug = params.topicSlug as string;
+  const lesson = lessonsData[topicSlug];
   const [aiExplaining, setAiExplaining] = useState(false);
   const [aiResponse, setAiResponse] = useState("");
 
@@ -110,8 +110,8 @@ export default function LessonDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-lg text-muted-foreground">Lesson not found</p>
-        <Link href="/learn">
-          <Button className="mt-4">Back to Lessons</Button>
+        <Link href="/lab">
+          <Button className="mt-4">Back to Lab</Button>
         </Link>
       </div>
     );
@@ -143,7 +143,7 @@ export default function LessonDetailPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/learn">
+        <Link href="/lab">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -209,22 +209,22 @@ export default function LessonDetailPage() {
       {/* Navigation */}
       <div className="flex justify-between">
         {lesson.prevSlug ? (
-          <Link href={`/learn/${lesson.prevSlug}`}>
+          <Link href={`/lab/${lesson.prevSlug}`}>
             <Button variant="outline" className="gap-2">
               <ArrowLeft className="h-4 w-4" /> Previous Lesson
             </Button>
           </Link>
         ) : <div />}
         {lesson.nextSlug ? (
-          <Link href={`/learn/${lesson.nextSlug}`}>
+          <Link href={`/lab/${lesson.nextSlug}`}>
             <Button className="gap-2">
               Next Lesson <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         ) : (
-          <Link href="/challenges">
+          <Link href="/arena">
             <Button className="gap-2">
-              Start Challenges <ArrowRight className="h-4 w-4" />
+              Enter the Arena <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         )}

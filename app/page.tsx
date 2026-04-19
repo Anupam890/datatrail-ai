@@ -28,7 +28,7 @@ export default function Home() {
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-6">
               <Database className="w-6 h-6 text-primary" />
-              <span className="text-xl font-bold text-white">DataTrail <span className="text-primary">AI</span></span>
+              <span className="text-xl font-bold text-white">SQLArena</span>
             </div>
             <p className="text-muted-foreground text-sm max-w-sm mb-8 leading-relaxed">
               The premium SQL learning platform for the next generation of data engineers and analysts. Built by developers, for developers.
@@ -47,7 +47,7 @@ export default function Home() {
             <h4 className="font-bold text-white mb-6">Product</h4>
             <ul className="space-y-4 text-sm text-muted-foreground">
               <li><a href="#" className="hover:text-primary transition-colors">Course Library</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Challenges</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Arena</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">AI Assistant</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Enterprise</a></li>
             </ul>
@@ -65,7 +65,7 @@ export default function Home() {
         </div>
         
         <div className="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-           <p>© 2026 DataTrail AI. All rights reserved.</p>
+           <p>© 2026 SQLArena. All rights reserved.</p>
            <p>Powered by Next.js & React Bits.</p>
         </div>
       </footer>

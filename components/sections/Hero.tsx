@@ -70,7 +70,7 @@ export default function Hero() {
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             </Link>
             <Link 
-              href="/challenges"
+              href="/arena"
               className="px-8 py-4 rounded-full border border-border bg-white/5 hover:bg-white/10 hover:border-muted-foreground/50 transition-all font-bold text-lg flex items-center gap-2"
             >
               <Play className="w-5 h-5 fill-current" />

@@ -50,13 +50,13 @@ export default function SignupPage() {
         email: formData.email,
         password: formData.password,
         name: formData.name,
-        callbackURL: "/dashboard",
+        callbackURL: "/arena",
       });
 
       if (signUpError) {
         setError(signUpError.message || "Registration Failed");
       } else {
-        router.push("/dashboard");
+        router.push("/arena");
       }
     } catch (err) {
       setError("System handshake failure.");

@@ -17,6 +17,7 @@ import { Search, CheckCircle2, Circle, Bookmark } from "lucide-react";
 
 interface Problem {
   id: number;
+  slug: string;
   title: string;
   difficulty: "easy" | "medium" | "hard";
   topic: string;
@@ -25,21 +26,21 @@ interface Problem {
 }
 
 const problems: Problem[] = [
-  { id: 1, title: "Select All Employees", difficulty: "easy", topic: "basics", solved: true, bookmarked: false },
-  { id: 2, title: "Filter by Department", difficulty: "easy", topic: "basics", solved: true, bookmarked: false },
-  { id: 3, title: "Count by Department", difficulty: "easy", topic: "aggregations", solved: true, bookmarked: false },
-  { id: 4, title: "Average Salary by Department", difficulty: "easy", topic: "aggregations", solved: false, bookmarked: true },
-  { id: 5, title: "Employee-Department Join", difficulty: "medium", topic: "joins", solved: false, bookmarked: false },
-  { id: 6, title: "Top Customers by Orders", difficulty: "medium", topic: "aggregations", solved: false, bookmarked: false },
-  { id: 7, title: "Self Join - Find Managers", difficulty: "medium", topic: "joins", solved: true, bookmarked: false },
-  { id: 8, title: "Orders with No Matches", difficulty: "medium", topic: "joins", solved: false, bookmarked: true },
-  { id: 9, title: "Salary Ranking", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
-  { id: 10, title: "Running Total of Orders", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
-  { id: 11, title: "Subquery - Above Average Salary", difficulty: "medium", topic: "subqueries", solved: false, bookmarked: false },
-  { id: 12, title: "Correlated Subquery - Department Max", difficulty: "hard", topic: "subqueries", solved: false, bookmarked: false },
-  { id: 13, title: "Monthly Order Summary", difficulty: "medium", topic: "aggregations", solved: false, bookmarked: false },
-  { id: 14, title: "Employees Hired After Average", difficulty: "medium", topic: "subqueries", solved: false, bookmarked: false },
-  { id: 15, title: "Dense Rank with Ties", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
+  { id: 1, slug: "select-all-employees", title: "Select All Employees", difficulty: "easy", topic: "basics", solved: true, bookmarked: false },
+  { id: 2, slug: "filter-by-department", title: "Filter by Department", difficulty: "easy", topic: "basics", solved: true, bookmarked: false },
+  { id: 3, slug: "count-by-department", title: "Count by Department", difficulty: "easy", topic: "aggregations", solved: true, bookmarked: false },
+  { id: 4, slug: "average-salary-by-department", title: "Average Salary by Department", difficulty: "easy", topic: "aggregations", solved: false, bookmarked: true },
+  { id: 5, slug: "employee-department-join", title: "Employee-Department Join", difficulty: "medium", topic: "joins", solved: false, bookmarked: false },
+  { id: 6, slug: "top-customers-by-orders", title: "Top Customers by Orders", difficulty: "medium", topic: "aggregations", solved: false, bookmarked: false },
+  { id: 7, slug: "self-join-find-managers", title: "Self Join - Find Managers", difficulty: "medium", topic: "joins", solved: true, bookmarked: false },
+  { id: 8, slug: "orders-with-no-matches", title: "Orders with No Matches", difficulty: "medium", topic: "joins", solved: false, bookmarked: true },
+  { id: 9, slug: "salary-ranking", title: "Salary Ranking", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
+  { id: 10, slug: "running-total-of-orders", title: "Running Total of Orders", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
+  { id: 11, slug: "subquery-above-average-salary", title: "Subquery - Above Average Salary", difficulty: "medium", topic: "subqueries", solved: false, bookmarked: false },
+  { id: 12, slug: "correlated-subquery-department-max", title: "Correlated Subquery - Department Max", difficulty: "hard", topic: "subqueries", solved: false, bookmarked: false },
+  { id: 13, slug: "monthly-order-summary", title: "Monthly Order Summary", difficulty: "medium", topic: "aggregations", solved: false, bookmarked: false },
+  { id: 14, slug: "employees-hired-after-average", title: "Employees Hired After Average", difficulty: "medium", topic: "subqueries", solved: false, bookmarked: false },
+  { id: 15, slug: "dense-rank-with-ties", title: "Dense Rank with Ties", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
 ];
 
 const difficultyColor = {
@@ -48,7 +49,7 @@ const difficultyColor = {
   hard: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
-export default function ChallengesPage() {
+export default function ArenaPage() {
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("all");
   const [topic, setTopic] = useState("all");
@@ -63,10 +64,10 @@ export default function ChallengesPage() {
   const solvedCount = problems.filter((p) => p.solved).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Challenges</h1>
+          <h1 className="text-2xl font-bold">Arena</h1>
           <p className="text-muted-foreground">
             {solvedCount}/{problems.length} solved
           </p>
@@ -113,8 +114,8 @@ export default function ChallengesPage() {
       {/* Problem List */}
       <div className="space-y-2">
         {filtered.map((problem) => (
-          <Link key={problem.id} href={`/challenges/${problem.id}`}>
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+          <Link key={problem.id} href={`/arena/${problem.slug}`}>
+            <Card className="hover:bg-accent/50 transition-colors cursor-pointer mb-2">
               <CardContent className="flex items-center gap-4 p-4">
                 {problem.solved ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />

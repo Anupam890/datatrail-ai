@@ -1,24 +1,23 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { Sidebar } from "./sidebar";
-import { Navbar } from "./navbar";
+import { TopNavbar } from "./TopNavbar";
 import { motion } from "framer-motion";
-import { useLayoutStore } from "@/store/use-layout-store";
-import { cn } from "@/lib/utils";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isPending, data: session } = authClient.useSession();
-  const { isSidebarCollapsed } = useLayoutStore();
+
+  const isPublicRoute = pathname.startsWith("/u/");
 
   useEffect(() => {
-    if (!isPending && !session) {
+    if (!isPending && !session && !isPublicRoute) {
       router.push("/login");
     }
-  }, [isPending, session, router]);
+  }, [isPending, session, router, isPublicRoute]);
 
   if (isPending) {
     return (
@@ -31,30 +30,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!session) return null;
+  if (!session && !isPublicRoute) return null;
 
   return (
-    <div className="flex min-h-screen bg-[#0B0F19] text-slate-200 overflow-x-hidden">
-      {/* Sidebar - Desktop */}
-      <Sidebar />
-
-      {/* Main Content Area */}
-      <div className={cn(
-        "flex flex-1 flex-col transition-all duration-300 ease-in-out w-full",
-        isSidebarCollapsed ? "md:pl-20" : "md:pl-60"
-      )}>
-        <Navbar />
-        
-        <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            {children}
-          </motion.div>
-        </main>
-      </div>
+    <div className="min-h-screen bg-[#0B0F19] text-slate-200">
+      <TopNavbar />
+      
+      <main className="pt-16 min-h-screen">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full"
+        >
+          {children}
+        </motion.div>
+      </main>
     </div>
   );
 }

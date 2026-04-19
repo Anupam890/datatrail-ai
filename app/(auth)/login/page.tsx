@@ -31,13 +31,13 @@ export default function LoginPage() {
       const { error: signInError } = await signIn.email({
         email: formData.email,
         password: formData.password,
-        callbackURL: "/dashboard",
+        callbackURL: "/arena",
       });
 
       if (signInError) {
         setError(signInError.message || "Invalid credentials");
       } else {
-        router.push("/dashboard");
+        router.push("/arena");
       }
     } catch (err) {
       setError("An unexpected error occurred.");

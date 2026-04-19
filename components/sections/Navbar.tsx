@@ -30,7 +30,7 @@ export default function Navbar() {
             <Database className="w-6 h-6 text-primary" />
           </div>
           <span className="text-xl font-bold tracking-tight text-white">
-            DataTrail <span className="text-primary italic">AI</span>
+            SQLArena
           </span>
         </Link>
 
@@ -39,8 +39,8 @@ export default function Navbar() {
           <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
             Courses
           </Link>
-          <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
-            Challenges
+          <Link href="/arena" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
+            Arena
           </Link>
           <Link href="#" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors">
             Pricing
@@ -72,7 +72,7 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/95 backdrop-blur-lg border-b border-border p-6 flex flex-col gap-6 animate-in fade-in slide-in-from-top-4">
           <Link href="#" className="text-lg font-medium">Courses</Link>
-          <Link href="#" className="text-lg font-medium">Challenges</Link>
+          <Link href="/arena" className="text-lg font-medium">Arena</Link>
           <Link href="#" className="text-lg font-medium">Pricing</Link>
           <Link href="#" className="text-lg font-medium">Docs</Link>
           <Link href="/login" className="text-lg font-medium">Log in</Link>

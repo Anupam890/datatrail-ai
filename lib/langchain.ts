@@ -76,8 +76,25 @@ Provide your analysis in markdown with:
 ## Optimized Query
 `);
 
+const nl2sqlPrompt = PromptTemplate.fromTemplate(`
+You are an expert SQL architect. Convert the following natural language request into a valid, optimized SQL query.
+Use the provided table schema for context.
+
+Table Schema:
+{schema}
+
+User Request:
+{request}
+
+Problem Context:
+{problem}
+
+Return ONLY the SQL query, with no markdown formatting or explanation.
+`);
+
 export const explainChain = explainPrompt.pipe(model).pipe(outputParser);
 export const debugChain = debugPrompt.pipe(model).pipe(outputParser);
 export const hintChain = hintPrompt.pipe(model).pipe(outputParser);
 export const chatChain = chatPrompt.pipe(model).pipe(outputParser);
 export const optimizeChain = optimizePrompt.pipe(model).pipe(outputParser);
+export const nl2sqlChain = nl2sqlPrompt.pipe(model).pipe(outputParser);

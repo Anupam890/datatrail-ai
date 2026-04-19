@@ -162,10 +162,10 @@ const difficultyColor = {
   hard: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
-export default function ChallengeDetailPage() {
+export default function ArenaProblemPage() {
   const params = useParams();
-  const id = params.id as string;
-  const problem = problemsData[id];
+  const problemSlug = params.problemSlug as string;
+  const problem = problemsData[problemSlug];
 
   const [code, setCode] = useState(problem?.starterCode || "");
   const [result, setResult] = useState<QueryResult | null>(null);
@@ -181,8 +181,8 @@ export default function ChallengeDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <p className="text-lg text-muted-foreground">Problem not found</p>
-        <Link href="/challenges">
-          <Button className="mt-4">Back to Challenges</Button>
+        <Link href="/arena">
+          <Button className="mt-4">Back to Arena</Button>
         </Link>
       </div>
     );
@@ -256,7 +256,7 @@ export default function ChallengeDetailPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/challenges">
+        <Link href="/arena">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-4 w-4" />
           </Button>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Clock, ArrowRight } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 const recentActivity = [
   { id: 1, problem: "Select All Employees", status: "correct", time: "2m 15s", topic: "basics", date: "2 hours ago" },
@@ -27,15 +28,20 @@ const difficultyColor = {
 };
 
 export function RecentActivity() {
+  const { data: session } = authClient.useSession();
+  const username = session?.user?.name?.toLowerCase().replace(/\s+/g, '-');
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Recent Activity</CardTitle>
-        <Link href="/progress">
-          <Button variant="ghost" size="sm" className="gap-1 text-xs">
-            View all <ArrowRight className="h-3 w-3" />
-          </Button>
-        </Link>
+        {username && (
+          <Link href={`/u/${username}`}>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs">
+              View all <ArrowRight className="h-3 w-3" />
+            </Button>
+          </Link>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -75,7 +81,7 @@ export function RecommendedProblems() {
           {recommendedProblems.map((problem) => (
             <Link
               key={problem.id}
-              href={`/challenges/${problem.id}`}
+              href={`/arena/${problem.id}`}
               className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent/50 transition-colors"
             >
               <div>
@@ -91,7 +97,7 @@ export function RecommendedProblems() {
             </Link>
           ))}
         </div>
-        <Link href="/challenges">
+        <Link href="/arena">
           <Button variant="outline" className="w-full mt-4 gap-2" size="sm">
             Browse All Challenges <ArrowRight className="h-3 w-3" />
           </Button>

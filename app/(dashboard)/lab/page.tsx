@@ -38,7 +38,7 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
   const isComplete = lesson.completedCount === lesson.lessonCount;
 
   return (
-    <Link href={`/learn/${lesson.slug}`}>
+    <Link href={`/lab/${lesson.slug}`}>
       <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
@@ -65,12 +65,12 @@ function LessonCard({ lesson }: { lesson: Lesson }) {
   );
 }
 
-export default function LearnPage() {
+export default function LabPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       <div>
-        <h1 className="text-2xl font-bold">Learn SQL</h1>
-        <p className="text-muted-foreground">Structured lessons from basics to advanced topics</p>
+        <h1 className="text-2xl font-bold">The Lab</h1>
+        <p className="text-muted-foreground">Structured SQL tracks and experiments</p>
       </div>
 
       <Tabs defaultValue="all">
