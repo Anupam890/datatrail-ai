@@ -5,18 +5,36 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Code2, Terminal } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Sparkles,
+  BookOpen,
+  Code2,
+  Terminal,
+  Play,
+} from "lucide-react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SQLEditor } from "@/components/editor/sql-editor";
+import { ResultsTable } from "@/components/editor/results-table";
+import { ConceptVisualizer } from "@/components/lab/concept-visualizer";
+import type { QueryResult } from "@/types";
 
-const lessonsData: Record<string, {
-  title: string;
-  category: string;
-  content: string[];
-  examples: { title: string; sql: string; explanation: string }[];
-  prevSlug?: string;
-  nextSlug?: string;
-}> = {
+// ─── Lesson data (unchanged) ───────────────────────────────────────────────
+
+const lessonsData: Record<
+  string,
+  {
+    title: string;
+    category: string;
+    content: string[];
+    examples: { title: string; sql: string; explanation: string }[];
+    starterCode: string;
+    prevSlug?: string;
+    nextSlug?: string;
+  }
+> = {
   "intro-to-sql": {
     title: "Introduction to SQL",
     category: "basics",
@@ -31,6 +49,7 @@ const lessonsData: Record<string, {
       { title: "Filter with WHERE", sql: "SELECT name, salary\nFROM employees\nWHERE department = 'Engineering'\n  AND salary > 100000;", explanation: "Filters employees in Engineering with salary above 100k. AND requires both conditions to be true." },
       { title: "Sort and Limit", sql: "SELECT name, salary\nFROM employees\nORDER BY salary DESC\nLIMIT 5;", explanation: "Returns the top 5 highest-paid employees. DESC sorts from highest to lowest." },
     ],
+    starterCode: "SELECT name, salary\nFROM employees\nWHERE department = 'Engineering';",
     nextSlug: "working-with-joins",
   },
   "working-with-joins": {
@@ -47,6 +66,7 @@ const lessonsData: Record<string, {
       { title: "LEFT JOIN", sql: "SELECT c.name, o.product\nFROM customers c\nLEFT JOIN orders o\n  ON c.name = o.customer_name;", explanation: "Returns ALL customers, even those without orders. Customers with no orders show NULL for product." },
       { title: "Self JOIN", sql: "SELECT e.name AS employee,\n       m.name AS manager\nFROM employees e\nJOIN employees m\n  ON e.manager_id = m.id;", explanation: "Joins employees table with itself to find each employee's manager using manager_id." },
     ],
+    starterCode: "SELECT e.name, d.name AS department\nFROM employees e\nINNER JOIN departments d\n  ON e.dept_id = d.id;",
     prevSlug: "intro-to-sql",
     nextSlug: "aggregate-functions",
   },
@@ -62,10 +82,11 @@ const lessonsData: Record<string, {
       { title: "COUNT and GROUP BY", sql: "SELECT department, COUNT(*) AS emp_count\nFROM employees\nGROUP BY department;", explanation: "Counts employees per department. COUNT(*) counts all rows in each group." },
       { title: "AVG with HAVING", sql: "SELECT department, ROUND(AVG(salary), 2) AS avg_salary\nFROM employees\nGROUP BY department\nHAVING AVG(salary) > 100000;", explanation: "Shows departments with average salary above 100k. HAVING filters after grouping." },
     ],
+    starterCode: "SELECT department, COUNT(*) AS emp_count\nFROM employees\nGROUP BY department;",
     prevSlug: "working-with-joins",
     nextSlug: "subqueries",
   },
-  "subqueries": {
+  subqueries: {
     title: "Subqueries",
     category: "subqueries",
     content: [
@@ -78,6 +99,7 @@ const lessonsData: Record<string, {
       { title: "WHERE Subquery", sql: "SELECT name, salary\nFROM employees\nWHERE salary > (\n  SELECT AVG(salary) FROM employees\n);", explanation: "Finds employees earning above average. The subquery calculates the average first, then the outer query filters." },
       { title: "Correlated Subquery", sql: "SELECT e.name, e.salary,\n  (SELECT MAX(salary)\n   FROM employees e2\n   WHERE e2.department = e.department\n  ) AS dept_max\nFROM employees e;", explanation: "For each employee, finds the max salary in their department. The subquery runs once per outer row." },
     ],
+    starterCode: "SELECT name, salary\nFROM employees\nWHERE salary > (\n  SELECT AVG(salary) FROM employees\n);",
     prevSlug: "aggregate-functions",
     nextSlug: "window-functions",
   },
@@ -95,6 +117,7 @@ const lessonsData: Record<string, {
       { title: "RANK by Department", sql: "SELECT name, department, salary,\n  RANK() OVER (\n    PARTITION BY department\n    ORDER BY salary DESC\n  ) AS dept_rank\nFROM employees;", explanation: "Ranks employees by salary within each department. Ties get the same rank, and the next rank is skipped." },
       { title: "Running Total", sql: "SELECT order_date, customer_name,\n  quantity * price AS value,\n  SUM(quantity * price) OVER (\n    ORDER BY order_date\n  ) AS running_total\nFROM orders;", explanation: "Calculates a running total of order values sorted by date. Each row shows the cumulative sum up to that point." },
     ],
+    starterCode: "SELECT name, department, salary,\n  RANK() OVER (\n    PARTITION BY department\n    ORDER BY salary DESC\n  ) AS dept_rank\nFROM employees;",
     prevSlug: "subqueries",
   },
 };
@@ -111,8 +134,35 @@ export default function LabTopicPage() {
   const params = useParams();
   const topicSlug = params.topicSlug as string;
   const lesson = lessonsData[topicSlug];
+
+  const [code, setCode] = useState(lesson?.starterCode ?? "");
+  const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+
   const [aiExplaining, setAiExplaining] = useState(false);
   const [aiResponse, setAiResponse] = useState("");
+
+  const handleRun = useCallback(async () => {
+    setIsRunning(true);
+    try {
+      const res = await fetch("/api/sql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: code }),
+      });
+      const data = await res.json();
+      setQueryResult(data);
+    } catch {
+      setQueryResult({
+        columns: [],
+        rows: [],
+        executionTimeMs: 0,
+        error: "Failed to execute query. Check your connection.",
+      });
+    } finally {
+      setIsRunning(false);
+    }
+  }, [code]);
 
   if (!lesson) {
     return (
@@ -137,7 +187,7 @@ export default function LabTopicPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "chat",
-          message: `Explain the key concepts of "${lesson.title}" in SQL. Keep it concise.`,
+          message: `Explain the key concepts of "${lesson.title}" in SQL. Keep it concise and beginner-friendly.`,
           context: lesson.content.join(" "),
         }),
       });
@@ -155,9 +205,10 @@ export default function LabTopicPage() {
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[5%] -right-[10%] w-[25%] h-[25%] bg-indigo-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[10%] -left-[5%] w-[20%] h-[20%] bg-blue-500/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative max-w-4xl mx-auto space-y-8">
+      <div className="relative max-w-[1400px] mx-auto space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -177,83 +228,177 @@ export default function LabTopicPage() {
           </div>
         </motion.div>
 
-        {/* Content Sections */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="bg-slate-900/30 border-slate-800/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-indigo-500" />
-                Lesson Content
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {lesson.content.map((paragraph, idx) => (
-                <motion.p
+        {/* ═══ Split Pane: Content (left) + Editor (right) ═══ */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* ─── Left Panel: Lesson Content ─── */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-6"
+          >
+            {/* Lesson text */}
+            <Card className="bg-slate-900/30 border-slate-800/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-indigo-500" />
+                  Lesson Content
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {lesson.content.map((paragraph, idx) => (
+                  <motion.p
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 + idx * 0.05 }}
+                    className="text-sm leading-relaxed text-slate-400"
+                  >
+                    {paragraph}
+                  </motion.p>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Code examples */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
+                <Code2 className="h-4 w-4 text-indigo-500" />
+                Examples
+              </h2>
+              {lesson.examples.map((example, idx) => (
+                <motion.div
                   key={idx}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 + idx * 0.08 }}
+                >
+                  <Card className="bg-slate-900/30 border-slate-800/50 overflow-hidden">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">{example.title}</CardTitle>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-[10px] gap-1 text-slate-500 hover:text-indigo-400"
+                          onClick={() => setCode(example.sql)}
+                        >
+                          <Play className="h-3 w-3" />
+                          Try it
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pt-0">
+                      <div className="rounded-xl overflow-hidden border border-slate-800/50">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/70 border-b border-slate-800/50">
+                          <div className="flex items-center gap-1.5">
+                            <div className="h-2 w-2 rounded-full bg-rose-500/50" />
+                            <div className="h-2 w-2 rounded-full bg-amber-500/50" />
+                            <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
+                          </div>
+                          <span className="text-[10px] font-mono text-slate-600 ml-2">
+                            <Terminal className="h-3 w-3 inline mr-1" />
+                            example.sql
+                          </span>
+                        </div>
+                        <pre className="p-4 overflow-x-auto bg-slate-950/50">
+                          <code className="text-sm font-mono text-slate-300 leading-relaxed">{example.sql}</code>
+                        </pre>
+                      </div>
+                      <p className="text-sm text-slate-500 leading-relaxed">{example.explanation}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ─── Right Panel: SQL Editor + Results ─── */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 }}
+            className="space-y-4"
+          >
+            <Card className="bg-slate-900/30 border-slate-800/50 overflow-hidden">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                    <Terminal className="h-4 w-4 text-indigo-500" />
+                    SQL Editor
+                  </CardTitle>
+                  <Badge variant="outline" className="text-[10px] border-slate-700 text-slate-500">
+                    Ctrl+Enter to run
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="border-t border-slate-800/50">
+                  <SQLEditor
+                    value={code}
+                    onChange={setCode}
+                    onRun={handleRun}
+                    height="260px"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Run button */}
+            <Button
+              onClick={handleRun}
+              disabled={isRunning || !code.trim()}
+              className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl h-11 shadow-lg shadow-indigo-500/20"
+            >
+              <Play className="h-4 w-4" />
+              {isRunning ? "Running..." : "Run Query"}
+            </Button>
+
+            {/* Results */}
+            <AnimatePresence>
+              {queryResult && (
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + idx * 0.05 }}
-                  className="text-sm leading-relaxed text-slate-400"
+                  exit={{ opacity: 0, y: 10 }}
                 >
-                  {paragraph}
-                </motion.p>
-              ))}
+                  <Card className="bg-slate-900/30 border-slate-800/50 overflow-hidden">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500">
+                          Output
+                        </CardTitle>
+                        {!queryResult.error && queryResult.rows.length > 0 && (
+                          <span className="text-[10px] text-slate-600">
+                            {queryResult.rows.length} row{queryResult.rows.length !== 1 ? "s" : ""} &middot; {queryResult.executionTimeMs}ms
+                          </span>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <ResultsTable result={queryResult} />
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+
+        {/* ═══ Concept Visualizer (full-width bottom section) ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="bg-slate-900/30 border-slate-800/50">
+            <CardContent className="p-6">
+              <ConceptVisualizer category={lesson.category} />
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Code Examples */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-4"
-        >
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
-            <Code2 className="h-4 w-4 text-indigo-500" />
-            Examples
-          </h2>
-          {lesson.examples.map((example, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 + idx * 0.08 }}
-            >
-              <Card className="bg-slate-900/30 border-slate-800/50 overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{example.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 pt-0">
-                  {/* Terminal-style code block */}
-                  <div className="rounded-xl overflow-hidden border border-slate-800/50">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/70 border-b border-slate-800/50">
-                      <div className="flex items-center gap-1.5">
-                        <div className="h-2 w-2 rounded-full bg-rose-500/50" />
-                        <div className="h-2 w-2 rounded-full bg-amber-500/50" />
-                        <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-600 ml-2">
-                        <Terminal className="h-3 w-3 inline mr-1" />
-                        example.sql
-                      </span>
-                    </div>
-                    <pre className="p-4 overflow-x-auto bg-slate-950/50">
-                      <code className="text-sm font-mono text-slate-300 leading-relaxed">{example.sql}</code>
-                    </pre>
-                  </div>
-                  <p className="text-sm text-slate-500 leading-relaxed">{example.explanation}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Ask AI */}
+        {/* ═══ AI Tutor ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -297,7 +442,7 @@ export default function LabTopicPage() {
           </Card>
         </motion.div>
 
-        {/* Navigation */}
+        {/* ═══ Navigation ═══ */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
