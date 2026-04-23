@@ -9,7 +9,7 @@ interface SpotlightCardProps {
   spotlightColor?: string;
 }
 
-export default function SpotlightCard({
+export function SpotlightCard({
   children,
   className,
   spotlightColor = "rgba(99, 102, 241, 0.15)",

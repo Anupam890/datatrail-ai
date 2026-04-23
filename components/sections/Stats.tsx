@@ -1,7 +1,7 @@
 "use client";
 
-import CountUp from "../ui/CountUp";
-import FadeIn from "../ui/FadeIn";
+import { CountUp } from "../ui/count-up";
+import { FadeIn } from "../ui/fade-in";
 
 const STATS = [
   { label: "Problems Solved", value: 1420500, suffix: "+" },

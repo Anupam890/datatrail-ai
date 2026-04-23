@@ -5,7 +5,9 @@ import {
   hintChain, 
   chatChain, 
   optimizeChain, 
-  nl2sqlChain 
+  nl2sqlChain,
+  analyzeDataChain,
+  generateQuestionsChain,
 } from "@/lib/langchain";
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, query, error, expected, problem, level, message, context, request: nlRequest, schema } = body;
+    const { action, query, error, expected, problem, level, message, context, request: nlRequest, schema, tableName, columns, sampleRows, summary } = body;
 
     let chain;
     let input: any;
@@ -42,6 +44,14 @@ export async function POST(request: NextRequest) {
       case "nl2sql":
         chain = nl2sqlChain;
         input = { request: nlRequest, schema, problem: problem || "Not specified" };
+        break;
+      case "analyze_csv":
+        chain = analyzeDataChain;
+        input = { tableName: tableName || "data", columns: columns || "", sampleRows: sampleRows || "" };
+        break;
+      case "generate_questions":
+        chain = generateQuestionsChain;
+        input = { tableName: tableName || "data", schema: schema || "", summary: summary || "", sampleRows: sampleRows || "" };
         break;
       default:
         return new Response(JSON.stringify({ error: "Invalid action" }), { status: 400 });

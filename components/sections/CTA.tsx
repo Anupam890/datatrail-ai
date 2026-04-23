@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import FadeIn from "../ui/FadeIn";
+import { FadeIn } from "../ui/fade-in";
 import { ArrowRight, Zap } from "lucide-react";
 import Link from "next/link"
 

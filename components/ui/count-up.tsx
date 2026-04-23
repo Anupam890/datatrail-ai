@@ -12,7 +12,7 @@ interface CountUpProps {
   suffix?: string;
 }
 
-export default function CountUp({
+export function CountUp({
   to,
   from = 0,
   duration = 2,

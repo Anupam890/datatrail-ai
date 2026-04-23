@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Code2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen, Code2, Terminal } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const lessonsData: Record<string, {
   title: string;
@@ -99,6 +99,14 @@ const lessonsData: Record<string, {
   },
 };
 
+const categoryColors: Record<string, { text: string; bg: string; border: string }> = {
+  basics: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+  joins: { text: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+  aggregations: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+  subqueries: { text: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+  "window-functions": { text: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
+};
+
 export default function LabTopicPage() {
   const params = useParams();
   const topicSlug = params.topicSlug as string;
@@ -108,14 +116,17 @@ export default function LabTopicPage() {
 
   if (!lesson) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-lg text-muted-foreground">Lesson not found</p>
+      <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center space-y-4">
+        <h1 className="text-4xl font-black italic text-slate-700">404</h1>
+        <p className="text-slate-500 font-medium tracking-tight">Lesson not found</p>
         <Link href="/lab">
-          <Button className="mt-4">Back to Lab</Button>
+          <Button variant="outline" className="border-slate-800 mt-2">Back to Lab</Button>
         </Link>
       </div>
     );
   }
+
+  const colors = categoryColors[lesson.category] || categoryColors.basics;
 
   async function handleAskAI() {
     setAiExplaining(true);
@@ -140,94 +151,180 @@ export default function LabTopicPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link href="/lab">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <Badge variant="outline" className="capitalize mb-1">{lesson.category.replace("-", " ")}</Badge>
-          <h1 className="text-2xl font-bold">{lesson.title}</h1>
-        </div>
+    <div className="min-h-screen bg-[#0B0F19] text-white py-8 md:py-12 px-4 md:px-6">
+      {/* Background Decor */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[5%] -right-[10%] w-[25%] h-[25%] bg-indigo-500/5 rounded-full blur-[120px]" />
       </div>
 
-      {/* Content Sections */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2">
-          <BookOpen className="h-5 w-5 text-primary" />
-          <CardTitle>Lesson Content</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {lesson.content.map((paragraph, idx) => (
-            <p key={idx} className="text-sm leading-relaxed text-muted-foreground">{paragraph}</p>
-          ))}
-        </CardContent>
-      </Card>
+      <div className="relative max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4"
+        >
+          <Link href="/lab">
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl border border-slate-800 hover:bg-slate-800 hover:border-slate-700 transition-all">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="space-y-1">
+            <Badge variant="outline" className={`capitalize text-[10px] ${colors.border} ${colors.text}`}>
+              {lesson.category.replace("-", " ")}
+            </Badge>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{lesson.title}</h1>
+          </div>
+        </motion.div>
 
-      {/* Code Examples */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2">
-          <Code2 className="h-5 w-5 text-primary" />
-          <CardTitle>Examples</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        {/* Content Sections */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-slate-900/30 border-slate-800/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-indigo-500" />
+                Lesson Content
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {lesson.content.map((paragraph, idx) => (
+                <motion.p
+                  key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + idx * 0.05 }}
+                  className="text-sm leading-relaxed text-slate-400"
+                >
+                  {paragraph}
+                </motion.p>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Code Examples */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-4"
+        >
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
+            <Code2 className="h-4 w-4 text-indigo-500" />
+            Examples
+          </h2>
           {lesson.examples.map((example, idx) => (
-            <div key={idx}>
-              {idx > 0 && <Separator className="mb-6" />}
-              <h3 className="font-semibold text-sm mb-2">{example.title}</h3>
-              <pre className="rounded-lg bg-muted p-4 overflow-x-auto">
-                <code className="text-sm font-mono">{example.sql}</code>
-              </pre>
-              <p className="text-sm text-muted-foreground mt-2">{example.explanation}</p>
-            </div>
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 + idx * 0.08 }}
+            >
+              <Card className="bg-slate-900/30 border-slate-800/50 overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{example.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  {/* Terminal-style code block */}
+                  <div className="rounded-xl overflow-hidden border border-slate-800/50">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900/70 border-b border-slate-800/50">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-rose-500/50" />
+                        <div className="h-2 w-2 rounded-full bg-amber-500/50" />
+                        <div className="h-2 w-2 rounded-full bg-emerald-500/50" />
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-600 ml-2">
+                        <Terminal className="h-3 w-3 inline mr-1" />
+                        example.sql
+                      </span>
+                    </div>
+                    <pre className="p-4 overflow-x-auto bg-slate-950/50">
+                      <code className="text-sm font-mono text-slate-300 leading-relaxed">{example.sql}</code>
+                    </pre>
+                  </div>
+                  <p className="text-sm text-slate-500 leading-relaxed">{example.explanation}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </CardContent>
-      </Card>
+        </motion.div>
 
-      {/* Ask AI */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <CardTitle>Ask AI</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleAskAI} disabled={aiExplaining} className="gap-2">
-            <Sparkles className="h-4 w-4" />
-            {aiExplaining ? "Thinking..." : "Explain this concept with AI"}
-          </Button>
-          {aiResponse && (
-            <div className="mt-4 rounded-lg bg-muted p-4">
-              <pre className="whitespace-pre-wrap text-sm">{aiResponse}</pre>
-            </div>
+        {/* Ask AI */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          <Card className="bg-indigo-500/5 border-indigo-500/10">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+                  <Sparkles className="h-5 w-5 text-indigo-400" />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <p className="font-bold text-sm">AI Tutor</p>
+                    <p className="text-xs text-slate-500">Get a personalized explanation of this topic</p>
+                  </div>
+                  <Button
+                    onClick={handleAskAI}
+                    disabled={aiExplaining}
+                    size="sm"
+                    className="gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-500/20"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {aiExplaining ? "Thinking..." : "Explain with AI"}
+                  </Button>
+                  <AnimatePresence>
+                    {aiResponse && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="rounded-xl bg-slate-900/50 border border-slate-800/50 p-4 overflow-hidden"
+                      >
+                        <pre className="whitespace-pre-wrap text-sm text-slate-300 leading-relaxed">{aiResponse}</pre>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Navigation */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="flex justify-between pt-4"
+        >
+          {lesson.prevSlug ? (
+            <Link href={`/lab/${lesson.prevSlug}`}>
+              <Button variant="outline" className="gap-2 border-slate-800 bg-slate-900/50 hover:bg-slate-800 rounded-xl h-11">
+                <ArrowLeft className="h-4 w-4" /> Previous
+              </Button>
+            </Link>
+          ) : <div />}
+          {lesson.nextSlug ? (
+            <Link href={`/lab/${lesson.nextSlug}`}>
+              <Button className="gap-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl h-11 shadow-lg shadow-indigo-500/20">
+                Next Lesson <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/arena">
+              <Button className="gap-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl h-11 shadow-lg shadow-indigo-500/20">
+                Enter the Arena <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Navigation */}
-      <div className="flex justify-between">
-        {lesson.prevSlug ? (
-          <Link href={`/lab/${lesson.prevSlug}`}>
-            <Button variant="outline" className="gap-2">
-              <ArrowLeft className="h-4 w-4" /> Previous Lesson
-            </Button>
-          </Link>
-        ) : <div />}
-        {lesson.nextSlug ? (
-          <Link href={`/lab/${lesson.nextSlug}`}>
-            <Button className="gap-2">
-              Next Lesson <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        ) : (
-          <Link href="/arena">
-            <Button className="gap-2">
-              Enter the Arena <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        )}
+        </motion.div>
       </div>
     </div>
   );

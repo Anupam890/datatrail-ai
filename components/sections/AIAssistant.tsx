@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import FadeIn from "../ui/FadeIn";
-import AnimatedText from "../ui/AnimatedText";
+import { FadeIn } from "../ui/fade-in";
+import { AnimatedText } from "../ui/animated-text";
 import { Send, User, Bot, Sparkles } from "lucide-react";
 
 export default function AIAssistant() {

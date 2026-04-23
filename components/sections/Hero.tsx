@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import AnimatedText from "../ui/AnimatedText";
+import { AnimatedText } from "../ui/animated-text";
 import { ChevronRight, Play } from "lucide-react";
 import Link from "next/link";
 

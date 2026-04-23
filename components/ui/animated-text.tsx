@@ -12,7 +12,7 @@ interface AnimatedTextProps {
 
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
 
-export default function AnimatedText({
+export function AnimatedText({
   text,
   className,
   delay = 0,

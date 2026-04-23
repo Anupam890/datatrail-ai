@@ -23,8 +23,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#0B0F19]">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-slate-400">Loading your session...</p>
+          <div className="relative">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+            <div className="absolute inset-0 h-10 w-10 rounded-full bg-indigo-500/20 blur-xl" />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Loading session</p>
         </div>
       </div>
     );
@@ -38,9 +41,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       
       <main className="pt-16 min-h-screen">
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          key={pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
           className="w-full"
         >
           {children}

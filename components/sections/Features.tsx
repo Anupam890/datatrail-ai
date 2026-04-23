@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import SpotlightCard from "../ui/SpotlightCard";
-import FadeIn from "../ui/FadeIn";
+import { SpotlightCard } from "../ui/spotlight-card";
+import { FadeIn } from "../ui/fade-in";
 import { BrainCircuit, Database, Target, TrendingUp, Cpu, Lock } from "lucide-react";
 
 const FEATURES = [

@@ -11,7 +11,7 @@ interface FadeInProps {
   duration?: number;
 }
 
-export default function FadeIn({
+export function FadeIn({
   children,
   delay = 0,
   direction = "up",

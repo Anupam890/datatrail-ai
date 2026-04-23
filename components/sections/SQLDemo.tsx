@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import AnimatedText from "../ui/AnimatedText";
-import FadeIn from "../ui/FadeIn";
+import { AnimatedText } from "../ui/animated-text";
+import { FadeIn } from "../ui/fade-in";
 import { Sparkles, Terminal, Play, Table as TableIcon } from "lucide-react";
 
 const EXAMPLE_QUERY = `SELECT 

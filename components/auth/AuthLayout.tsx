@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Database, Sparkles, Terminal } from "lucide-react";
-import AnimatedText from "../ui/AnimatedText";
+import { AnimatedText } from "../ui/animated-text";
 import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
