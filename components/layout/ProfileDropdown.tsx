@@ -147,7 +147,12 @@ export function ProfileDropdown() {
             <div className="h-[1px] bg-slate-800/50 mx-2" />
 
             <div className="p-2 space-y-1">
-              <DropdownItem icon={Settings} label="Settings" />
+              <DropdownItem 
+                href="/settings" 
+                icon={Settings} 
+                label="Settings" 
+                onClick={() => setIsOpen(false)}
+              />
               <DropdownItem icon={HelpCircle} label="Help & Docs" />
             </div>
 

@@ -28,24 +28,53 @@ export function SQLEditor({ value, onChange, onRun, height = "300px" }: SQLEdito
   };
 
   return (
-    <div className="rounded-lg border overflow-hidden">
+    <div className="w-full">
       <Editor
         height={height}
         language="sql"
-        theme={theme === "dark" ? "vs-dark" : "light"}
+        theme="datatrail-dark"
         value={value}
         onChange={(val) => onChange(val || "")}
-        onMount={handleMount}
+        onMount={(editor, monaco) => {
+          handleMount(editor, monaco);
+          
+          // Define custom theme
+          monaco.editor.defineTheme("datatrail-dark", {
+            base: "vs-dark",
+            inherit: true,
+            rules: [
+              { token: "keyword", foreground: "818cf8", fontStyle: "bold" },
+              { token: "string", foreground: "34d399" },
+              { token: "number", foreground: "fbbf24" },
+              { token: "comment", foreground: "64748b", fontStyle: "italic" },
+              { token: "identifier", foreground: "e2e8f0" },
+            ],
+            colors: {
+              "editor.background": "#0B0F1900", // Transparent
+              "editor.foreground": "#e2e8f0",
+              "editorLineNumber.foreground": "#475569",
+              "editorLineNumber.activeForeground": "#818cf8",
+              "editor.selectionBackground": "#818cf820",
+              "editorCursor.foreground": "#818cf8",
+              "editor.lineHighlightBackground": "#1e293b50",
+            },
+          });
+          monaco.editor.setTheme("datatrail-dark");
+        }}
         options={{
           minimap: { enabled: false },
           fontSize: 14,
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
           lineNumbers: "on",
+          renderLineHighlight: "all",
           tabSize: 2,
           wordWrap: "on",
           automaticLayout: true,
           scrollBeyondLastLine: false,
-          padding: { top: 12 },
-          suggestOnTriggerCharacters: true,
+          padding: { top: 16, bottom: 16 },
+          fontLigatures: true,
+          cursorSmoothCaretAnimation: "on",
+          smoothScrolling: true,
         }}
       />
     </div>
