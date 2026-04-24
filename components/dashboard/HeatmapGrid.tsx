@@ -4,19 +4,10 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
-// Generating dummy data for 52 weeks
-const generateData = () => {
-  const data = [];
-  for (let i = 0; i < 52 * 7; i++) {
-    data.push({
-      count: Math.floor(Math.random() * 5),
-      date: new Date(Date.now() - (52 * 7 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    });
-  }
-  return data;
-};
-
-const activityData = generateData();
+interface HeatmapDay {
+  date: string;
+  count: number;
+}
 
 const getColor = (count: number) => {
   if (count === 0) return "bg-neutral-800";
@@ -26,8 +17,16 @@ const getColor = (count: number) => {
   return "bg-emerald-400";
 };
 
-export function HeatmapGrid() {
-  const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null);
+export function HeatmapGrid({ data }: { data?: HeatmapDay[] }) {
+  const [hoveredDay, setHoveredDay] = useState<HeatmapDay | null>(null);
+
+  // Fallback: if no data passed, show empty 52-week grid
+  const activityData = data && data.length > 0
+    ? data
+    : Array.from({ length: 52 * 7 }, (_, i) => ({
+        date: new Date(Date.now() - (52 * 7 - i) * 86400000).toISOString().split("T")[0],
+        count: 0,
+      }));
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 shadow-sm">

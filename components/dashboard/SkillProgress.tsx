@@ -6,22 +6,38 @@ import { cn } from "@/lib/utils";
 interface Skill {
   name: string;
   percentage: number;
-  color: string;
 }
 
-const skills: Skill[] = [
-  { name: "Joins", percentage: 85, color: "text-blue-500" },
-  { name: "Aggregations", percentage: 62, color: "text-emerald-500" },
-  { name: "Subqueries", percentage: 45, color: "text-amber-500" },
-  { name: "Window Functions", percentage: 28, color: "text-purple-500" },
+const skillColors = [
+  "text-blue-500",
+  "text-emerald-500",
+  "text-amber-500",
+  "text-purple-500",
+  "text-rose-500",
+  "text-cyan-500",
 ];
 
-export function SkillProgress() {
+export function SkillProgress({ skills }: { skills?: Skill[] }) {
+  const data = skills && skills.length > 0
+    ? skills
+    : [];
+
+  if (data.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm col-span-full">
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">Skill Proficiency</h3>
+        <p className="text-sm text-muted-foreground text-center py-4">
+          Solve problems to build your skill profile.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm col-span-full">
       <h3 className="mb-6 text-sm font-medium text-muted-foreground">Skill Proficiency</h3>
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-1">
-        {skills.map((skill, index) => (
+        {data.map((skill, index) => (
           <div key={skill.name} className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium">{skill.name}</p>
@@ -42,7 +58,7 @@ export function SkillProgress() {
                   cy="18"
                   r="16"
                   fill="none"
-                  className={cn("stroke-current", skill.color)}
+                  className={cn("stroke-current", skillColors[index % skillColors.length])}
                   strokeWidth="3"
                   strokeDasharray="100, 100"
                   initial={{ strokeDasharray: "0, 100" }}

@@ -5,13 +5,13 @@ import Link from "next/link";
 import { Award, Trophy, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const topUsers = [
-  { rank: 1, name: "saurav_v", solved: 482, score: 12450 },
-  { rank: 2, name: "db_master", solved: 456, score: 11820 },
-  { rank: 3, name: "sql_queen", solved: 412, score: 10900 },
-  { rank: 4, name: "anupam_890", solved: 389, score: 9800, isCurrent: true },
-  { rank: 5, name: "query_king", solved: 367, score: 9200 },
-];
+interface LeaderboardUser {
+  rank: number;
+  name: string;
+  solved: number;
+  score: number;
+  isCurrent?: boolean;
+}
 
 const getRankIcon = (rank: number) => {
   if (rank === 1) return <Trophy className="h-4 w-4 text-amber-500" />;
@@ -20,7 +20,27 @@ const getRankIcon = (rank: number) => {
   return <span className="text-xs font-bold text-muted-foreground">{rank}</span>;
 };
 
-export function LeaderboardPreview() {
+export function LeaderboardPreview({ users }: { users?: LeaderboardUser[] }) {
+  const topUsers = users && users.length > 0
+    ? users
+    : [];
+
+  if (topUsers.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
+          <div className="flex items-center gap-2">
+            <Award className="h-4 w-4 text-purple-500" />
+            <h3 className="text-sm font-medium">Global Leaderboard</h3>
+          </div>
+        </div>
+        <div className="px-6 py-8 text-center text-sm text-muted-foreground">
+          No leaderboard data available yet.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
@@ -59,7 +79,7 @@ export function LeaderboardPreview() {
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs font-bold font-mono tracking-tight">{user.score}</span>
+              <span className="text-xs font-bold font-mono tracking-tight">{user.score.toLocaleString()}</span>
               <p className="text-[9px] text-muted-foreground uppercase">Points</p>
             </div>
           </motion.div>

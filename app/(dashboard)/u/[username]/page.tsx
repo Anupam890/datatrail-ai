@@ -38,15 +38,44 @@ import { RecommendedProblems } from "@/components/dashboard/RecommendedProblems"
 import { PlaygroundTab } from "@/components/dashboard/PlaygroundTab";
 
 const achievements = [
-  { id: 1, title: "SQL Ninja", description: "Solved 100 problems", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-  { id: 2, title: "100 Day Streak", description: "Consistency champion", icon: Star, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  { id: 3, title: "Optimization Guru", description: "Master of efficiency", icon: Medal, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+  { id: 1, title: "SQL Ninja", description: "Solved 100 problems", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", threshold: 100 },
+  { id: 2, title: "100 Day Streak", description: "Consistency champion", icon: Star, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20", threshold: 100 },
+  { id: 3, title: "Optimization Guru", description: "Master of efficiency", icon: Medal, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", threshold: 50 },
 ];
 
 type Tab = "overview" | "progress" | "activity" | "playground";
 
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+
+function getRankBadge(xp: number) {
+  if (xp >= 10000) return "Grandmaster";
+  if (xp >= 5000) return "Master";
+  if (xp >= 2000) return "Expert";
+  if (xp >= 500) return "Explorer";
+  if (xp >= 100) return "Apprentice";
+  return "Beginner";
+}
+
+function formatJoinDate(dateStr: string) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+}
+
+function timeAgo(dateStr: string) {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
 
 export default function UnifiedProfilePage() {
   const params = useParams();
@@ -130,8 +159,12 @@ export default function UnifiedProfilePage() {
               transition={{ delay: 0.1 }}
             >
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
-                <Badge className="bg-indigo-600 text-white border-none px-3 py-1 text-[10px] font-bold uppercase tracking-wider">Grandmaster</Badge>
-                <Badge variant="outline" className="border-slate-800 text-slate-400 px-3 py-1 text-[10px] uppercase tracking-wider">Top 1%</Badge>
+                <Badge className="bg-indigo-600 text-white border-none px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{getRankBadge(profile?.xp || 0)}</Badge>
+                {profileData.rank && profileData.totalUsers > 0 && (
+                  <Badge variant="outline" className="border-slate-800 text-slate-400 px-3 py-1 text-[10px] uppercase tracking-wider">
+                    Top {Math.max(1, Math.round((profileData.rank / profileData.totalUsers) * 100))}%
+                  </Badge>
+                )}
                 {isOwner && (
                   <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 text-[10px] uppercase tracking-wider">Your Workspace</Badge>
                 )}
@@ -147,10 +180,10 @@ export default function UnifiedProfilePage() {
               className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-500"
             >
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Globe className="h-3.5 w-3.5" /> Global Rank: #1,245
+                <Globe className="h-3.5 w-3.5" /> Global Rank: #{profileData.rank ? profileData.rank.toLocaleString() : "N/A"}
               </div>
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Calendar className="h-3.5 w-3.5" /> Joined April 2024
+                <Calendar className="h-3.5 w-3.5" /> Joined {profile?.created_at ? formatJoinDate(profile.created_at) : "recently"}
               </div>
               {isOwner ? (
                 <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg">
@@ -245,14 +278,14 @@ export default function UnifiedProfilePage() {
                 <div className="lg:col-span-8 space-y-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <StatCard title="Problems Solved" value={profile.total_solved || 0} icon={CheckCircle} color="emerald" description="Keep pushing!" />
-                    <StatCard title="Accuracy" value={78} suffix="%" icon={Target} color="blue" description="+2.4% from last month" />
+                    <StatCard title="Accuracy" value={profileData.accuracy ?? 0} suffix="%" icon={Target} color="blue" description={`${profileData.submissions?.length || 0} recent submissions`} />
                   </div>
                   
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
                       <History className="h-4 w-4 text-indigo-500" /> Consistency
                     </h3>
-                    <HeatmapGrid />
+                    <HeatmapGrid data={profileData.heatmapData} />
                   </div>
 
                   <div className="space-y-4">
@@ -287,8 +320,8 @@ export default function UnifiedProfilePage() {
                 <div className="lg:col-span-4 space-y-6">
                   {isOwner ? (
                     <>
-                      <DailyChallenge />
-                      <RecommendedProblems />
+                      <DailyChallenge challenge={profileData.dailyChallenge} />
+                      <RecommendedProblems problems={profileData.recommendedProblems} />
                     </>
                   ) : (
                     <Card className="bg-indigo-600/5 border-indigo-500/10 overflow-hidden relative">
@@ -304,7 +337,7 @@ export default function UnifiedProfilePage() {
                       </CardContent>
                     </Card>
                   )}
-                  <LeaderboardPreview />
+                  <LeaderboardPreview users={profileData.leaderboard} />
                 </div>
               </motion.div>
             )}
@@ -318,7 +351,7 @@ export default function UnifiedProfilePage() {
                 className="space-y-8"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <SkillProgress />
+                  <SkillProgress skills={profileData.skills} />
                 </div>
               </motion.div>
             )}
@@ -330,7 +363,7 @@ export default function UnifiedProfilePage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                <SubmissionTable />
+                <SubmissionTable submissions={profileData.submissions} />
               </motion.div>
             )}
 

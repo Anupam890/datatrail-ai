@@ -20,13 +20,18 @@ CREATE TABLE IF NOT EXISTS problems (
 CREATE TABLE IF NOT EXISTS profiles (
     user_id TEXT PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
     username TEXT UNIQUE NOT NULL,
+    display_name TEXT,
     avatar_url TEXT,
     bio TEXT,
-    github_link TEXT,
+    github_url TEXT,
+    linkedin_url TEXT,
+    website TEXT,
+    snowflake_config JSONB,
     streak INTEGER DEFAULT 0,
     total_solved INTEGER DEFAULT 0,
     xp INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Submissions Table
@@ -41,23 +46,54 @@ CREATE TABLE IF NOT EXISTS submissions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Lessons Table
-CREATE TABLE IF NOT EXISTS lessons (
+-- User Preferences Table
+CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id TEXT PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
+    font_size INTEGER DEFAULT 14,
+    tab_size INTEGER DEFAULT 2,
+    sql_dialect TEXT DEFAULT 'postgresql',
+    animated_transitions BOOLEAN DEFAULT true,
+    compact_mode BOOLEAN DEFAULT false,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- SQL Tracks Table (Learning lab track groupings)
+CREATE TABLE IF NOT EXISTS sql_tracks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
-    content TEXT NOT NULL,
-    difficulty TEXT CHECK (difficulty IN ('beginner', 'intermediate', 'advanced')),
+    description TEXT,
+    category TEXT,
+    icon TEXT,
+    color_key TEXT,
+    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- User Progress Table
-CREATE TABLE IF NOT EXISTS progress (
+-- SQL Lessons Table (Individual lessons within tracks)
+CREATE TABLE IF NOT EXISTS sql_lessons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    track_id UUID REFERENCES sql_tracks(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    category TEXT,
+    sort_order INTEGER DEFAULT 0,
+    content JSONB,
+    examples JSONB,
+    tips JSONB,
+    starter_code TEXT,
+    prev_slug TEXT,
+    next_slug TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Lesson Progress Table (Tracks user completion of lessons)
+CREATE TABLE IF NOT EXISTS lesson_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id TEXT REFERENCES "user"(id) ON DELETE CASCADE,
-    lesson_id UUID REFERENCES lessons(id) ON DELETE CASCADE,
-    completed BOOLEAN DEFAULT FALSE,
-    last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    PRIMARY KEY (user_id, lesson_id)
+    lesson_slug TEXT NOT NULL,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, lesson_slug)
 );
 
 -- 2. SQL Execution Engine (RPC)
@@ -208,18 +244,53 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON public."user"
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+-- Sandbox SQL Execution (used by /api/sql for free-form SELECT queries)
+CREATE OR REPLACE FUNCTION exec_sql(query_text TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_result JSONB;
+BEGIN
+    EXECUTE format('SELECT jsonb_agg(t) FROM (%s) t', query_text) INTO v_result;
+    RETURN COALESCE(v_result, '[]'::JSONB);
+EXCEPTION WHEN OTHERS THEN
+    RAISE EXCEPTION '%', SQLERRM;
+END;
+$$;
+
 -- 3. Row Level Security (RLS)
 
 ALTER TABLE problems ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
-ALTER TABLE progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sql_tracks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sql_lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
 
--- Policies
+-- Problems: publicly readable
 CREATE POLICY "Public problems are viewable by everyone" ON problems FOR SELECT USING (true);
+
+-- Profiles: publicly readable, owners can update/insert
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid()::text = user_id);
+CREATE POLICY "Users can insert their own profile" ON profiles FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+-- Submissions: owners can read and insert
 CREATE POLICY "Submissions are viewable by owner" ON submissions FOR SELECT USING (auth.uid()::text = user_id);
-CREATE POLICY "Lessons are viewable by everyone" ON lessons FOR SELECT USING (true);
-CREATE POLICY "Progress is viewable by owner" ON progress FOR SELECT USING (auth.uid()::text = user_id);
+CREATE POLICY "Users can insert their own submissions" ON submissions FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+-- User Preferences: owners can read, insert, update
+CREATE POLICY "Users can view their own preferences" ON user_preferences FOR SELECT USING (auth.uid()::text = user_id);
+CREATE POLICY "Users can insert their own preferences" ON user_preferences FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+CREATE POLICY "Users can update their own preferences" ON user_preferences FOR UPDATE USING (auth.uid()::text = user_id);
+
+-- SQL Tracks & Lessons: publicly readable
+CREATE POLICY "SQL tracks are viewable by everyone" ON sql_tracks FOR SELECT USING (true);
+CREATE POLICY "SQL lessons are viewable by everyone" ON sql_lessons FOR SELECT USING (true);
+
+-- Lesson Progress: owners can read and insert
+CREATE POLICY "Users can view their own lesson progress" ON lesson_progress FOR SELECT USING (auth.uid()::text = user_id);
+CREATE POLICY "Users can insert their own lesson progress" ON lesson_progress FOR INSERT WITH CHECK (auth.uid()::text = user_id);
