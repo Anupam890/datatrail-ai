@@ -394,11 +394,338 @@ export const windowFunctionAnimationSteps: AnimationStep[] = [
   },
 ];
 
-// Map topic categories to their animation sequences
+// ─── Filtering (LIKE, IN, BETWEEN) ────────────────────────────────────────
+
+const customersTable: TableData = {
+  name: "customers",
+  columns: ["name", "city", "country"],
+  rows: [
+    { name: "Alfreds", city: "Berlin", country: "Germany" },
+    { name: "Ana Trujillo", city: "Mexico City", country: "Mexico" },
+    { name: "Antonio", city: "London", country: "UK" },
+    { name: "Around Horn", city: "London", country: "UK" },
+    { name: "Berglunds", city: "Lulea", country: "Sweden" },
+    { name: "Blauer See", city: "Mannheim", country: "Germany" },
+  ],
+};
+
+export const filterAnimationSteps: AnimationStep[] = [
+  {
+    id: 0,
+    label: "Full Table",
+    description: "All customers before filtering",
+    tables: [{ data: customersTable }],
+  },
+  {
+    id: 1,
+    label: "LIKE Pattern",
+    description: "WHERE name LIKE 'A%' matches names starting with A",
+    tables: [
+      {
+        data: customersTable,
+        highlightedRows: [0, 1, 2, 3],
+        dimmedRows: [4, 5],
+      },
+    ],
+  },
+  {
+    id: 2,
+    label: "IN Operator",
+    description: "WHERE country IN ('Germany', 'UK') selects matching countries",
+    tables: [
+      {
+        data: customersTable,
+        highlightedRows: [0, 2, 3, 5],
+        dimmedRows: [1, 4],
+        highlightedCols: ["country"],
+      },
+    ],
+  },
+  {
+    id: 3,
+    label: "Result",
+    description: "Filtered result showing only Germany and UK customers",
+    tables: [
+      {
+        data: {
+          name: "Result",
+          columns: ["name", "city", "country"],
+          rows: [
+            { name: "Alfreds", city: "Berlin", country: "Germany" },
+            { name: "Antonio", city: "London", country: "UK" },
+            { name: "Around Horn", city: "London", country: "UK" },
+            { name: "Blauer See", city: "Mannheim", country: "Germany" },
+          ],
+        },
+        isResult: true,
+        highlightedRows: [0, 1, 2, 3],
+      },
+    ],
+  },
+];
+
+// ─── Modifying Data (INSERT/UPDATE/DELETE) ────────────────────────────────
+
+const productsTable: TableData = {
+  name: "products",
+  columns: ["id", "name", "price"],
+  rows: [
+    { id: 1, name: "Widget", price: 25 },
+    { id: 2, name: "Gadget", price: 50 },
+    { id: 3, name: "Doohickey", price: 15 },
+  ],
+};
+
+export const modifyAnimationSteps: AnimationStep[] = [
+  {
+    id: 0,
+    label: "Original Table",
+    description: "Products table before any modifications",
+    tables: [{ data: productsTable }],
+  },
+  {
+    id: 1,
+    label: "INSERT INTO",
+    description: "INSERT INTO products VALUES (4, 'Thingamajig', 35) adds a new row",
+    tables: [
+      {
+        data: {
+          name: "products",
+          columns: ["id", "name", "price"],
+          rows: [
+            { id: 1, name: "Widget", price: 25 },
+            { id: 2, name: "Gadget", price: 50 },
+            { id: 3, name: "Doohickey", price: 15 },
+            { id: 4, name: "Thingamajig", price: 35 },
+          ],
+        },
+        highlightedRows: [3],
+      },
+    ],
+  },
+  {
+    id: 2,
+    label: "UPDATE",
+    description: "UPDATE products SET price = 30 WHERE id = 3 modifies an existing row",
+    tables: [
+      {
+        data: {
+          name: "products",
+          columns: ["id", "name", "price"],
+          rows: [
+            { id: 1, name: "Widget", price: 25 },
+            { id: 2, name: "Gadget", price: 50 },
+            { id: 3, name: "Doohickey", price: 30 },
+            { id: 4, name: "Thingamajig", price: 35 },
+          ],
+        },
+        highlightedRows: [2],
+        highlightedCols: ["price"],
+      },
+    ],
+  },
+  {
+    id: 3,
+    label: "DELETE",
+    description: "DELETE FROM products WHERE id = 1 removes a row",
+    tables: [
+      {
+        data: {
+          name: "Result",
+          columns: ["id", "name", "price"],
+          rows: [
+            { id: 2, name: "Gadget", price: 50 },
+            { id: 3, name: "Doohickey", price: 30 },
+            { id: 4, name: "Thingamajig", price: 35 },
+          ],
+        },
+        isResult: true,
+        highlightedRows: [0, 1, 2],
+      },
+    ],
+  },
+];
+
+// ─── Database Design (CREATE TABLE / Constraints) ─────────────────────────
+
+export const designAnimationSteps: AnimationStep[] = [
+  {
+    id: 0,
+    label: "Define Columns",
+    description: "CREATE TABLE defines columns with data types",
+    tables: [
+      {
+        data: {
+          name: "Schema: students",
+          columns: ["column", "type", "constraint"],
+          rows: [
+            { column: "id", type: "INT", constraint: "PRIMARY KEY" },
+            { column: "name", type: "VARCHAR(100)", constraint: "NOT NULL" },
+            { column: "email", type: "VARCHAR(100)", constraint: "UNIQUE" },
+            { column: "age", type: "INT", constraint: "CHECK(age>=18)" },
+          ],
+        },
+        highlightedCols: ["type"],
+      },
+    ],
+  },
+  {
+    id: 1,
+    label: "Add Constraints",
+    description: "Constraints enforce data integrity rules on the table",
+    tables: [
+      {
+        data: {
+          name: "Schema: students",
+          columns: ["column", "type", "constraint"],
+          rows: [
+            { column: "id", type: "INT", constraint: "PRIMARY KEY" },
+            { column: "name", type: "VARCHAR(100)", constraint: "NOT NULL" },
+            { column: "email", type: "VARCHAR(100)", constraint: "UNIQUE" },
+            { column: "age", type: "INT", constraint: "CHECK(age>=18)" },
+          ],
+        },
+        highlightedCols: ["constraint"],
+        highlightedRows: [0, 1, 2, 3],
+      },
+    ],
+  },
+  {
+    id: 2,
+    label: "Insert Data",
+    description: "Valid data passes all constraint checks",
+    tables: [
+      {
+        data: {
+          name: "students",
+          columns: ["id", "name", "email", "age"],
+          rows: [
+            { id: 1, name: "Alice", email: "alice@test.com", age: 22 },
+            { id: 2, name: "Bob", email: "bob@test.com", age: 20 },
+          ],
+        },
+        highlightedRows: [0, 1],
+      },
+    ],
+  },
+  {
+    id: 3,
+    label: "Constraint Violation",
+    description: "INSERT with age=16 fails: CHECK constraint (age >= 18) violated",
+    tables: [
+      {
+        data: {
+          name: "ERROR",
+          columns: ["status", "detail"],
+          rows: [
+            { status: "REJECTED", detail: "age=16 fails CHECK(age>=18)" },
+            { status: "REJECTED", detail: "NULL name fails NOT NULL" },
+            { status: "REJECTED", detail: "duplicate email fails UNIQUE" },
+          ],
+        },
+        isResult: true,
+        highlightedRows: [0, 1, 2],
+      },
+    ],
+  },
+];
+
+// ─── SQL Functions (String/Numeric/Date) ──────────────────────────────────
+
+export const functionsAnimationSteps: AnimationStep[] = [
+  {
+    id: 0,
+    label: "Source Data",
+    description: "Customer data with various columns",
+    tables: [
+      {
+        data: {
+          name: "customers",
+          columns: ["name", "city", "price"],
+          rows: [
+            { name: "alice smith", city: "  New York  ", price: 29.567 },
+            { name: "BOB JONES", city: "London", price: 14.2 },
+            { name: "Carol Lee", city: "  Tokyo  ", price: 99.999 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 1,
+    label: "String Functions",
+    description: "UPPER(), TRIM(), LENGTH() transform text data",
+    tables: [
+      {
+        data: {
+          name: "String Results",
+          columns: ["UPPER(name)", "TRIM(city)", "LENGTH(name)"],
+          rows: [
+            { "UPPER(name)": "ALICE SMITH", "TRIM(city)": "New York", "LENGTH(name)": 11 },
+            { "UPPER(name)": "BOB JONES", "TRIM(city)": "London", "LENGTH(name)": 9 },
+            { "UPPER(name)": "CAROL LEE", "TRIM(city)": "Tokyo", "LENGTH(name)": 9 },
+          ],
+        },
+        highlightedRows: [0, 1, 2],
+      },
+    ],
+  },
+  {
+    id: 2,
+    label: "Numeric Functions",
+    description: "ROUND(), CEIL(), FLOOR() handle decimal precision",
+    tables: [
+      {
+        data: {
+          name: "Numeric Results",
+          columns: ["price", "ROUND(price,1)", "CEIL(price)", "FLOOR(price)"],
+          rows: [
+            { price: 29.567, "ROUND(price,1)": 29.6, "CEIL(price)": 30, "FLOOR(price)": 29 },
+            { price: 14.2, "ROUND(price,1)": 14.2, "CEIL(price)": 15, "FLOOR(price)": 14 },
+            { price: 99.999, "ROUND(price,1)": 100.0, "CEIL(price)": 100, "FLOOR(price)": 99 },
+          ],
+        },
+        isResult: true,
+        highlightedRows: [0, 1, 2],
+      },
+    ],
+  },
+  {
+    id: 3,
+    label: "NULL Functions",
+    description: "COALESCE() replaces NULL with a default value",
+    tables: [
+      {
+        data: {
+          name: "COALESCE Result",
+          columns: ["name", "phone", "COALESCE(phone, email, 'N/A')"],
+          rows: [
+            { name: "Alice", phone: "555-0100", "COALESCE(phone, email, 'N/A')": "555-0100" },
+            { name: "Bob", phone: null, "COALESCE(phone, email, 'N/A')": "bob@test.com" },
+            { name: "Carol", phone: null, "COALESCE(phone, email, 'N/A')": "N/A" },
+          ],
+        },
+        isResult: true,
+        highlightedRows: [1, 2],
+      },
+    ],
+  },
+];
+
+// Map topic categories (track slugs) to their animation sequences
 export const animationsByCategory: Record<string, AnimationStep[]> = {
+  // Legacy category names (backward compat)
   basics: selectAnimationSteps,
-  joins: joinAnimationSteps,
   aggregations: groupByAnimationSteps,
+  // Track slugs from seed data
+  "sql-basics": selectAnimationSteps,
+  "modifying-data": modifyAnimationSteps,
+  "filtering-sorting": filterAnimationSteps,
+  "aggregate-functions": groupByAnimationSteps,
+  joins: joinAnimationSteps,
   subqueries: subqueryAnimationSteps,
   "window-functions": windowFunctionAnimationSteps,
+  "database-design": designAnimationSteps,
+  "sql-functions": functionsAnimationSteps,
+  "advanced-sql": selectAnimationSteps,
 };

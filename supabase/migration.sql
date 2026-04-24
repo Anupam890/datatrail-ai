@@ -604,3 +604,55 @@ CREATE POLICY "Users can update own preferences"
 -- Bucket config: public, 2MB limit, allowed MIME types: jpeg, png, gif, webp.
 -- Files stored as: {user_id}.{ext}
 -- Public URL pattern: {SUPABASE_URL}/storage/v1/object/public/avatars/{user_id}.{ext}
+
+-- ============================================================================
+-- SQL Lab Curriculum Tables
+-- ============================================================================
+-- Created via scripts/create-lab-tables.js
+-- Seeded via scripts/seed-lab-data.js
+
+CREATE TABLE IF NOT EXISTS sql_tracks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT NOT NULL,
+  category TEXT NOT NULL,
+  icon TEXT NOT NULL DEFAULT 'Database',
+  color_key TEXT NOT NULL DEFAULT 'basics',
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS sql_lessons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  track_id UUID REFERENCES sql_tracks(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  category TEXT NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  content JSONB NOT NULL DEFAULT '[]',
+  examples JSONB NOT NULL DEFAULT '[]',
+  tips JSONB NOT NULL DEFAULT '[]',
+  starter_code TEXT NOT NULL DEFAULT '',
+  prev_slug TEXT,
+  next_slug TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS lesson_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,
+  lesson_slug TEXT NOT NULL,
+  completed_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, lesson_slug)
+);
+
+ALTER TABLE sql_tracks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sql_lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read tracks" ON sql_tracks FOR SELECT USING (true);
+CREATE POLICY "Anyone can read lessons" ON sql_lessons FOR SELECT USING (true);
+CREATE POLICY "Anyone can read progress" ON lesson_progress FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert progress" ON lesson_progress FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update progress" ON lesson_progress FOR UPDATE USING (true);

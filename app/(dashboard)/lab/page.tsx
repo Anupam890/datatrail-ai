@@ -10,122 +10,86 @@ import {
   CheckCircle2,
   GraduationCap,
   Database,
-  Link2,
+  GitMerge,
+  Filter,
   Calculator,
   Layers,
   BarChart3,
+  LayoutGrid,
+  Wrench,
+  Code2,
+  Shield,
+  PenLine,
   Sparkles,
   ChevronDown,
   Circle,
   Loader2,
 } from "lucide-react";
 import { useLabStore } from "@/store/use-lab-store";
+import { useQuery } from "@tanstack/react-query";
 
-// ─── Data ──────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────
 
-interface Section {
+interface Lesson {
+  id: string;
   title: string;
   slug: string;
-  status: "completed" | "in_progress" | "not_started";
+  sort_order: number;
 }
 
 interface Track {
+  id: string;
   title: string;
   slug: string;
   description: string;
   category: string;
-  sections: Section[];
+  icon: string;
+  color_key: string;
+  sort_order: number;
+  lessons: Lesson[];
+  lessonCount: number;
 }
 
-const tracks: Track[] = [
-  {
-    title: "Introduction to SQL",
-    slug: "intro-to-sql",
-    description: "SELECT, WHERE, ORDER BY, and LIMIT fundamentals",
-    category: "basics",
-    sections: [
-      { title: "SELECT Basics", slug: "intro-to-sql", status: "completed" },
-      { title: "WHERE Filtering", slug: "intro-to-sql", status: "completed" },
-      { title: "ORDER BY & LIMIT", slug: "intro-to-sql", status: "completed" },
-      { title: "Practice Challenge", slug: "intro-to-sql", status: "completed" },
-    ],
-  },
-  {
-    title: "Working with JOINs",
-    slug: "working-with-joins",
-    description: "INNER, LEFT, RIGHT, FULL joins and self-joins",
-    category: "joins",
-    sections: [
-      { title: "INNER JOIN", slug: "working-with-joins", status: "completed" },
-      { title: "LEFT & RIGHT JOIN", slug: "working-with-joins", status: "completed" },
-      { title: "FULL OUTER JOIN", slug: "working-with-joins", status: "completed" },
-      { title: "Self JOIN", slug: "working-with-joins", status: "in_progress" },
-      { title: "Practice Challenge", slug: "working-with-joins", status: "not_started" },
-    ],
-  },
-  {
-    title: "Aggregate Functions",
-    slug: "aggregate-functions",
-    description: "COUNT, SUM, AVG, GROUP BY, and HAVING",
-    category: "aggregations",
-    sections: [
-      { title: "COUNT & SUM", slug: "aggregate-functions", status: "completed" },
-      { title: "AVG, MIN, MAX", slug: "aggregate-functions", status: "completed" },
-      { title: "GROUP BY", slug: "aggregate-functions", status: "in_progress" },
-      { title: "HAVING Clause", slug: "aggregate-functions", status: "not_started" },
-    ],
-  },
-  {
-    title: "Subqueries",
-    slug: "subqueries",
-    description: "Scalar, correlated, EXISTS, and IN subqueries",
-    category: "subqueries",
-    sections: [
-      { title: "Scalar Subqueries", slug: "subqueries", status: "completed" },
-      { title: "Correlated Subqueries", slug: "subqueries", status: "in_progress" },
-      { title: "EXISTS & IN", slug: "subqueries", status: "not_started" },
-      { title: "Practice Challenge", slug: "subqueries", status: "not_started" },
-    ],
-  },
-  {
-    title: "Window Functions",
-    slug: "window-functions",
-    description: "RANK, ROW_NUMBER, LAG, LEAD, and running totals",
-    category: "window-functions",
-    sections: [
-      { title: "ROW_NUMBER & RANK", slug: "window-functions", status: "not_started" },
-      { title: "DENSE_RANK vs RANK", slug: "window-functions", status: "not_started" },
-      { title: "LAG & LEAD", slug: "window-functions", status: "not_started" },
-      { title: "Running Totals", slug: "window-functions", status: "not_started" },
-      { title: "Practice Challenge", slug: "window-functions", status: "not_started" },
-    ],
-  },
-];
+interface Progress {
+  lesson_slug: string;
+  completed_at: string;
+}
+
+// ─── Icon & Color Maps ───────────────────────────────────────────────────
+
+const iconMap: Record<string, React.ElementType> = {
+  Database,
+  PenLine,
+  Filter,
+  BarChart3,
+  GitMerge,
+  Layers,
+  LayoutGrid,
+  Wrench,
+  Code2,
+  Shield,
+};
+
+const colorMap: Record<string, { text: string; bg: string; border: string; ring: string }> = {
+  basics: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", ring: "stroke-emerald-500" },
+  modify: { text: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20", ring: "stroke-cyan-500" },
+  filter: { text: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20", ring: "stroke-orange-500" },
+  aggregate: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", ring: "stroke-amber-500" },
+  joins: { text: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", ring: "stroke-blue-500" },
+  subqueries: { text: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", ring: "stroke-purple-500" },
+  window: { text: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", ring: "stroke-rose-500" },
+  design: { text: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/20", ring: "stroke-teal-500" },
+  functions: { text: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20", ring: "stroke-pink-500" },
+  advanced: { text: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20", ring: "stroke-indigo-500" },
+};
 
 const categories = [
   { value: "all", label: "All" },
   { value: "basics", label: "Basics" },
-  { value: "joins", label: "Joins" },
-  { value: "aggregations", label: "Aggregations" },
-  { value: "subqueries", label: "Subqueries" },
-  { value: "window-functions", label: "Window Functions" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+  { value: "expert", label: "Expert" },
 ];
-
-const categoryIcons: Record<string, React.ElementType> = {
-  basics: Database,
-  joins: Link2,
-  aggregations: Calculator,
-  subqueries: Layers,
-  "window-functions": BarChart3,
-};
-
-const categoryColors: Record<string, { text: string; bg: string; border: string; ring: string }> = {
-  basics: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", ring: "stroke-emerald-500" },
-  joins: { text: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20", ring: "stroke-blue-500" },
-  aggregations: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", ring: "stroke-amber-500" },
-  subqueries: { text: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20", ring: "stroke-purple-500" },
-  "window-functions": { text: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", ring: "stroke-rose-500" },
-};
 
 // ─── Circular Progress ─────────────────────────────────────────────────────
 
@@ -157,20 +121,27 @@ function CircularProgress({ percentage, color, size = 48 }: { percentage: number
 
 // ─── Section status icon ───────────────────────────────────────────────────
 
-function StatusIcon({ status }: { status: Section["status"] }) {
-  if (status === "completed") return <CheckCircle2 className="h-4 w-4 text-emerald-400" />;
-  if (status === "in_progress") return <Loader2 className="h-4 w-4 text-indigo-400 animate-spin" />;
+function StatusIcon({ completed }: { completed: boolean }) {
+  if (completed) return <CheckCircle2 className="h-4 w-4 text-emerald-400" />;
   return <Circle className="h-4 w-4 text-slate-700" />;
 }
 
 // ─── Track Card ────────────────────────────────────────────────────────────
 
-function TrackCard({ track, index }: { track: Track; index: number }) {
-  const completedCount = track.sections.filter((s) => s.status === "completed").length;
-  const progress = (completedCount / track.sections.length) * 100;
-  const isComplete = completedCount === track.sections.length;
-  const Icon = categoryIcons[track.category] || BookOpen;
-  const colors = categoryColors[track.category] || categoryColors.basics;
+function TrackCard({
+  track,
+  index,
+  completedSlugs,
+}: {
+  track: Track;
+  index: number;
+  completedSlugs: Set<string>;
+}) {
+  const completedCount = track.lessons.filter((l) => completedSlugs.has(l.slug)).length;
+  const progress = track.lessonCount > 0 ? (completedCount / track.lessonCount) * 100 : 0;
+  const isComplete = completedCount === track.lessonCount && track.lessonCount > 0;
+  const Icon = iconMap[track.icon] || BookOpen;
+  const colors = colorMap[track.color_key] || colorMap.basics;
 
   const { expandedTrackSlug, toggleTrack } = useLabStore();
   const isExpanded = expandedTrackSlug === track.slug;
@@ -186,7 +157,6 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-emerald-300" />
         )}
 
-        {/* Clickable card header area */}
         <div className="cursor-pointer" onClick={() => toggleTrack(track.slug)}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
@@ -195,7 +165,7 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
                   <Icon className={`h-4 w-4 ${colors.text}`} />
                 </div>
                 <Badge variant="outline" className={`capitalize text-[10px] ${colors.border} ${colors.text}`}>
-                  {track.category.replace("-", " ")}
+                  {track.category}
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
@@ -223,7 +193,7 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">{completedCount}/{track.sections.length} sections</span>
+                  <span className="text-slate-500">{completedCount}/{track.lessonCount} lessons</span>
                 </div>
                 <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                   <motion.div
@@ -239,7 +209,7 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
           </CardContent>
         </div>
 
-        {/* Expandable section list */}
+        {/* Expandable lesson list */}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -251,34 +221,33 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
             >
               <div className="px-6 pb-5 pt-2 border-t border-slate-800/50">
                 <div className="space-y-1">
-                  {track.sections.map((section, sIdx) => (
-                    <Link key={sIdx} href={`/lab/${section.slug}`}>
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: sIdx * 0.05 }}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/50 transition-all group/item"
-                      >
-                        <StatusIcon status={section.status} />
-                        <span
-                          className={`text-sm flex-1 ${
-                            section.status === "completed"
-                              ? "text-slate-400"
-                              : section.status === "in_progress"
-                              ? "text-white"
-                              : "text-slate-500"
-                          } group-hover/item:text-white transition-colors`}
+                  {track.lessons.map((lesson, sIdx) => {
+                    const isCompleted = completedSlugs.has(lesson.slug);
+                    return (
+                      <Link key={lesson.id} href={`/lab/${lesson.slug}`}>
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: sIdx * 0.05 }}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/50 transition-all group/item"
                         >
-                          {section.title}
-                        </span>
-                        {section.status === "in_progress" && (
-                          <Badge className="text-[9px] bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
-                            In Progress
-                          </Badge>
-                        )}
-                      </motion.div>
-                    </Link>
-                  ))}
+                          <StatusIcon completed={isCompleted} />
+                          <span
+                            className={`text-sm flex-1 ${
+                              isCompleted ? "text-slate-400" : "text-slate-500"
+                            } group-hover/item:text-white transition-colors`}
+                          >
+                            {lesson.title}
+                          </span>
+                          {isCompleted && (
+                            <Badge className="text-[9px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                              Done
+                            </Badge>
+                          )}
+                        </motion.div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
@@ -292,12 +261,43 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
 // ─── Page ──────────────────────────────────────────────────────────────────
 
 export default function LabPage() {
-  const totalSections = tracks.reduce((sum, t) => sum + t.sections.length, 0);
-  const completedSections = tracks.reduce(
-    (sum, t) => sum + t.sections.filter((s) => s.status === "completed").length,
+  const { data: tracks = [], isLoading: tracksLoading } = useQuery<Track[]>({
+    queryKey: ["lab-tracks"],
+    queryFn: async () => {
+      const res = await fetch("/api/lab/tracks");
+      if (!res.ok) throw new Error("Failed to fetch tracks");
+      return res.json();
+    },
+  });
+
+  const { data: progress = [] } = useQuery<Progress[]>({
+    queryKey: ["lesson-progress"],
+    queryFn: async () => {
+      const res = await fetch("/api/user/progress");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const completedSlugs = new Set(progress.map((p) => p.lesson_slug));
+
+  const totalLessons = tracks.reduce((sum, t) => sum + t.lessonCount, 0);
+  const completedLessons = tracks.reduce(
+    (sum, t) => sum + t.lessons.filter((l) => completedSlugs.has(l.slug)).length,
     0
   );
-  const overallProgress = Math.round((completedSections / totalSections) * 100);
+  const overallProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  if (tracksLoading) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] text-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+          <p className="text-slate-400">Loading learning tracks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white py-8 md:py-12 px-4 md:px-6">
@@ -332,7 +332,7 @@ export default function LabPage() {
             transition={{ delay: 0.1 }}
             className="text-slate-400 max-w-xl text-lg"
           >
-            Structured SQL learning tracks from fundamentals to advanced techniques.
+            Structured SQL learning — {tracks.length} tracks, {totalLessons} lessons from basics to advanced.
           </motion.p>
         </div>
 
@@ -351,7 +351,7 @@ export default function LabPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold">Overall Progress</p>
-                    <p className="text-xs text-slate-500">{completedSections} of {totalSections} sections completed</p>
+                    <p className="text-xs text-slate-500">{completedLessons} of {totalLessons} lessons completed</p>
                   </div>
                 </div>
                 <span className="text-2xl font-black italic text-indigo-400">{overallProgress}%</span>
@@ -391,7 +391,7 @@ export default function LabPage() {
           <TabsContent value="all" className="mt-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {tracks.map((track, i) => (
-                <TrackCard key={track.slug} track={track} index={i} />
+                <TrackCard key={track.slug} track={track} index={i} completedSlugs={completedSlugs} />
               ))}
             </div>
           </TabsContent>
@@ -402,7 +402,7 @@ export default function LabPage() {
                 {tracks
                   .filter((t) => t.category === cat.value)
                   .map((track, i) => (
-                    <TrackCard key={track.slug} track={track} index={i} />
+                    <TrackCard key={track.slug} track={track} index={i} completedSlugs={completedSlugs} />
                   ))}
               </div>
             </TabsContent>

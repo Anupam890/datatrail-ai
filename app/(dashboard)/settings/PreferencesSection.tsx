@@ -129,6 +129,7 @@ export function PreferencesSection() {
                 onValueChange={(v) => {
                   setFontSize(v);
                   markDirty();
+                  
                 }}
                 max={24}
                 min={10}
