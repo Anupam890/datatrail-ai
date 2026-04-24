@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -27,6 +28,8 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export function ProfileSection() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
@@ -70,6 +73,66 @@ export function ProfileSection() {
     }
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/user/avatar", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to upload avatar");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Profile photo updated");
+      setAvatarPreview(null);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      setAvatarPreview(null);
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/user/avatar", { method: "DELETE" });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to remove avatar");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success("Profile photo removed");
+      setAvatarPreview(null);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show instant preview
+    setAvatarPreview(URL.createObjectURL(file));
+    uploadMutation.mutate(file);
+
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  };
+
+  const avatarSrc = avatarPreview || profile?.avatar_url || session?.user.image || "";
+  const isUploading = uploadMutation.isPending;
+  const isRemoving = removeMutation.isPending;
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
@@ -87,23 +150,60 @@ export function ProfileSection() {
 
       {/* Avatar Section */}
       <div className="flex items-center gap-8">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
         <div className="relative group">
           <Avatar className="h-24 w-24 border-2 border-slate-800 ring-4 ring-indigo-500/10">
-            <AvatarImage src={session?.user.image || ""} />
+            <AvatarImage src={avatarSrc} />
             <AvatarFallback className="bg-indigo-600 text-white text-2xl font-bold">
               {session?.user.name?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
-          <button className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Camera className="h-6 w-6 text-white" />
-          </button>
+          {isUploading ? (
+            <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center">
+              <Loader2 className="h-6 w-6 text-white animate-spin" />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Camera className="h-6 w-6 text-white" />
+            </button>
+          )}
         </div>
         <div className="space-y-1">
           <p className="text-sm font-bold text-white">Profile Photo</p>
           <p className="text-xs text-slate-500">JPG, GIF or PNG. Max size 2MB.</p>
           <div className="flex gap-2 mt-2">
-            <Button variant="outline" size="sm" className="bg-slate-900 border-slate-800 text-xs">Update</Button>
-            <Button variant="ghost" size="sm" className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 text-xs">Remove</Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="bg-slate-900 border-slate-800 text-xs"
+              disabled={isUploading || isRemoving}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isUploading ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+              {isUploading ? "Uploading..." : "Update"}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 text-xs"
+              disabled={isUploading || isRemoving || (!profile?.avatar_url && !session?.user.image)}
+              onClick={() => removeMutation.mutate()}
+            >
+              {isRemoving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+              {isRemoving ? "Removing..." : "Remove"}
+            </Button>
           </div>
         </div>
       </div>

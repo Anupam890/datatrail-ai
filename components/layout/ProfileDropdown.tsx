@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
+import { useQuery } from "@tanstack/react-query";
 
 interface DropdownItemProps {
   href?: string;
@@ -85,6 +86,17 @@ export function ProfileDropdown() {
   const username = user?.name || "User";
   const userInitial = username.charAt(0).toUpperCase();
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await fetch("/api/user/profile");
+      if (!res.ok) throw new Error("Failed to fetch profile");
+      return res.json();
+    },
+  });
+
+  const avatarUrl = profile?.avatar_url || user?.image;
+
   return (
     <div className="relative" ref={containerRef}>
       {/* Trigger */}
@@ -95,9 +107,13 @@ export function ProfileDropdown() {
           isOpen ? "bg-white/5 border-white/10" : "hover:bg-white/5"
         )}
       >
-        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-indigo-500/20">
-          {userInitial}
-        </div>
+        {avatarUrl ? (
+            <img src={avatarUrl} alt={username} className="h-8 w-8 rounded-full object-cover shadow-lg shadow-indigo-500/20" />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shadow-indigo-500/20">
+              {userInitial}
+            </div>
+          )}
         <ChevronDown className={cn("h-4 w-4 text-slate-500 transition-transform duration-200", isOpen && "rotate-180")} />
       </button>
 
@@ -114,9 +130,13 @@ export function ProfileDropdown() {
             {/* User Info Header */}
             <div className="p-4 bg-white/5 border-b border-slate-800/50">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
-                  {userInitial}
-                </div>
+                {avatarUrl ? (
+                    <img src={avatarUrl} alt={username} className="h-10 w-10 rounded-xl object-cover" />
+                  ) : (
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
+                      {userInitial}
+                    </div>
+                  )}
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-bold text-white truncate">{username}</span>
                   <span className="text-[10px] text-slate-500 font-medium truncate mb-1">{user?.email}</span>

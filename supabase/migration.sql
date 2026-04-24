@@ -572,3 +572,35 @@ BEGIN
   RETURN COALESCE(result, '[]'::jsonb);
 END;
 $$;
+
+-- =============================================
+-- USER PREFERENCES TABLE
+-- =============================================
+CREATE TABLE IF NOT EXISTS user_preferences (
+  user_id TEXT PRIMARY KEY,
+  font_size INTEGER DEFAULT 14,
+  tab_size INTEGER DEFAULT 2,
+  sql_dialect TEXT DEFAULT 'postgresql',
+  animated_transitions BOOLEAN DEFAULT true,
+  compact_mode BOOLEAN DEFAULT false,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own preferences"
+  ON user_preferences FOR SELECT USING (true);
+
+CREATE POLICY "Users can insert own preferences"
+  ON user_preferences FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update own preferences"
+  ON user_preferences FOR UPDATE USING (true);
+
+-- ============================================================================
+-- Supabase Storage: avatars bucket
+-- ============================================================================
+-- Created via scripts/create-avatar-bucket.js (not SQL-managed).
+-- Bucket config: public, 2MB limit, allowed MIME types: jpeg, png, gif, webp.
+-- Files stored as: {user_id}.{ext}
+-- Public URL pattern: {SUPABASE_URL}/storage/v1/object/public/avatars/{user_id}.{ext}
