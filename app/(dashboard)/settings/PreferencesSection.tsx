@@ -127,9 +127,8 @@ export function PreferencesSection() {
               <Slider
                 value={fontSize}
                 onValueChange={(v) => {
-                  setFontSize(v);
+                  setFontSize(v as number[]);
                   markDirty();
-                  
                 }}
                 max={24}
                 min={10}
@@ -154,7 +153,7 @@ export function PreferencesSection() {
             <Select
               value={tabSize}
               onValueChange={(v) => {
-                setTabSize(v);
+                if (v) setTabSize(v);
                 markDirty();
               }}
             >
@@ -181,7 +180,7 @@ export function PreferencesSection() {
             <Select
               value={dialect}
               onValueChange={(v) => {
-                setDialect(v);
+                if (v) setDialect(v);
                 markDirty();
               }}
             >

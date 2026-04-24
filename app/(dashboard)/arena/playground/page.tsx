@@ -9,8 +9,7 @@ import initSqlJs, { type Database as SqlDatabase, type SqlValue } from "sql.js";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResultsTable } from "@/components/editor/results-table";
-import { usePlaygroundStore } from "@/store/use-playground-store";
-import type { Question } from "@/store/use-playground-store";
+import { usePlaygroundStore, type Question, type DataAnalysis } from "@/store/use-playground-store";
 import type { QueryResult } from "@/types";
 import {
   ArrowLeft,
@@ -308,7 +307,7 @@ function DescriptionTab({
   analysis,
 }: {
   activeQuestion: Question | null;
-  analysis: ReturnType<typeof usePlaygroundStore>["analysis"];
+  analysis: DataAnalysis | null;
 }) {
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full custom-scrollbar">
@@ -412,7 +411,7 @@ function SchemaTab({
   csvColumns: string[];
   csvData: Record<string, unknown>[];
   tableName: string;
-  analysis: ReturnType<typeof usePlaygroundStore>["analysis"];
+  analysis: DataAnalysis | null;
 }) {
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full custom-scrollbar">

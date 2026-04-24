@@ -10,14 +10,27 @@ export async function GET(
   try {
     const supabase = getServiceSupabase();
 
-    // 1. Fetch Profile
-    const { data: profile, error: profileError } = await supabase
+    // 1. Fetch Profile — try exact match first, then match by slugified username
+    let { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
       .eq("username", username)
       .single();
 
     if (profileError || !profile) {
+      // Fallback: search by display_name or check all profiles for a slug match
+      const { data: allProfiles } = await supabase
+        .from("profiles")
+        .select("*");
+
+      profile = allProfiles?.find(
+        (p: any) => 
+          p.username?.toLowerCase() === username.toLowerCase() ||
+          p.display_name?.toLowerCase().replace(/\s+/g, "-") === username.toLowerCase()
+      ) || null;
+    }
+
+    if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 

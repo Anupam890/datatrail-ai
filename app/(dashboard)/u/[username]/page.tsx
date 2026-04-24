@@ -88,7 +88,7 @@ export default function UnifiedProfilePage() {
   const isOwner = loggedInUser?.name?.toLowerCase().replace(/\s+/g, '-') === profileUsername.toLowerCase() || 
                   loggedInUser?.id === profile?.user_id;
   
-  const displayName = profile?.username || (profileUsername || "User").split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const displayName = profile?.display_name || profile?.username || (profileUsername || "User").split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
 
   return (

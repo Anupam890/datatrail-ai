@@ -24,9 +24,9 @@ export interface DataAnalysis {
   insights: string[];
 }
 
-type Phase = "upload" | "analyzing" | "practice";
+export type Phase = "upload" | "analyzing" | "practice";
 
-interface PlaygroundState {
+export interface PlaygroundState {
   phase: Phase;
   csvData: Record<string, unknown>[];
   csvColumns: string[];
