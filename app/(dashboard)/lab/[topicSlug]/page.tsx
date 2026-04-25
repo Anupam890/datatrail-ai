@@ -25,6 +25,11 @@ import { ResultsTable } from "@/components/editor/results-table";
 import { ConceptVisualizer } from "@/components/lab/concept-visualizer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+  useSqlSandbox,
+  DEFAULT_SANDBOX_TABLES,
+  DEFAULT_SANDBOX_DATA,
+} from "@/hooks/use-sql-sandbox";
 import type { QueryResult } from "@/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────
@@ -206,6 +211,12 @@ export default function LabTopicPage() {
     },
   });
 
+  // Client-side SQL sandbox
+  const { ready: sandboxReady, runQuery } = useSqlSandbox(
+    DEFAULT_SANDBOX_TABLES,
+    DEFAULT_SANDBOX_DATA
+  );
+
   const [code, setCode] = useState("");
   const [codeInitialized, setCodeInitialized] = useState(false);
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
@@ -219,27 +230,13 @@ export default function LabTopicPage() {
     setCodeInitialized(true);
   }
 
-  const handleRun = useCallback(async () => {
+  const handleRun = useCallback(() => {
+    if (!code.trim() || !sandboxReady) return;
     setIsRunning(true);
-    try {
-      const res = await fetch("/api/sql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: code }),
-      });
-      const data = await res.json();
-      setQueryResult(data);
-    } catch {
-      setQueryResult({
-        columns: [],
-        rows: [],
-        executionTimeMs: 0,
-        error: "Failed to execute query. Check your connection.",
-      });
-    } finally {
-      setIsRunning(false);
-    }
-  }, [code]);
+    const result = runQuery(code.trim());
+    setQueryResult(result);
+    setIsRunning(false);
+  }, [code, sandboxReady, runQuery]);
 
   async function handleAskAI() {
     if (!lesson) return;
@@ -470,11 +467,11 @@ export default function LabTopicPage() {
             {/* Run button */}
             <Button
               onClick={handleRun}
-              disabled={isRunning || !code.trim()}
+              disabled={isRunning || !code.trim() || !sandboxReady}
               className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl h-11 shadow-lg shadow-indigo-500/20"
             >
               <Play className="h-4 w-4" />
-              {isRunning ? "Running..." : "Run Query"}
+              {!sandboxReady ? "Loading sandbox..." : isRunning ? "Running..." : "Run Query"}
             </Button>
 
             {/* Results */}

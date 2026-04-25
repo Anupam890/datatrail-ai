@@ -1,58 +1,75 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FadeIn } from "../ui/fade-in";
-import { ArrowRight, Zap } from "lucide-react";
-import Link from "next/link"
+import { ScrollReveal } from "../ui/scroll-reveal";
+import { ArrowRight, Zap, Star, ShieldCheck, Globe } from "lucide-react";
+import Link from "next/link";
 
 export default function CTA() {
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-40 relative overflow-hidden bg-[#0B0F19]">
+      {/* Background Decor - Immersive Orbs */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[600px] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[160px] animate-pulse" />
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[140px]" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 relative z-10 text-center">
-        <FadeIn>
-          <div className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center mx-auto mb-10 border border-primary/30 shadow-lg shadow-primary/10">
-            <Zap className="w-10 h-10 text-primary fill-primary/20" />
-          </div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="glass-dark rounded-[3.5rem] border-white/10 p-12 md:p-24 text-center relative overflow-hidden shadow-[0_0_100px_rgba(99,102,241,0.1)]">
+          {/* Internal Grain Texture */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: `url('https://grainy-gradients.vercel.app/noise.svg')` }} />
           
-          <h2 className="text-4xl md:text-6xl font-black mb-8">
-            Ready to become a <br />
-            <span className="text-gradient italic">Data Master?</span>
-          </h2>
-          
-          <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-12">
-            Join 85,000+ developers mastering SQL the smart way. No fluff, just production-grade skills.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link 
-              href="/signup"
-              className="px-10 py-5 rounded-2xl bg-primary text-white font-black text-xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center gap-3 relative group overflow-hidden"
-            >
-              <span className="relative z-10">Start Your Journey</span>
-              <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-2 transition-transform" />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </Link>
-            <Link 
-              href="mailto:sales@datatrail.ai"
-              className="px-10 py-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 transition-all font-bold text-xl"
-            >
-              Talk to Sales
-            </Link>
-          </div>
-          
-          <p className="mt-10 text-sm text-muted-foreground">
-             No credit card required. Free tier forever.
-          </p>
-        </FadeIn>
+          <ScrollReveal direction="up" distance={40}>
+            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 text-[10px] font-black uppercase tracking-[0.3em] mb-12">
+              <Star className="w-3 h-3 text-secondary fill-secondary" />
+              Join the data elite
+            </div>
+            
+            <h2 className="text-5xl md:text-8xl font-black text-white mb-10 leading-[1.1] tracking-tight">
+              Ready to build <br />
+              <span className="text-gradient italic">the Future?</span>
+            </h2>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-16 leading-relaxed font-medium">
+              Join <span className="text-white font-bold">2,400+ developers</span> mastering the next generation of data engineering. Start your journey for free today.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+              <Link 
+                href="/signup"
+                className="px-12 py-6 rounded-[2rem] bg-white text-black font-black text-xl shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] transition-all flex items-center gap-4 group relative overflow-hidden"
+              >
+                <span className="relative z-10">Start Learning</span>
+                <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-2 transition-transform" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              </Link>
+              <Link 
+                href="/curriculum"
+                className="px-12 py-6 rounded-[2rem] border border-white/10 bg-white/5 hover:bg-white/10 transition-all font-black text-xl text-white uppercase tracking-widest"
+              >
+                View Paths
+              </Link>
+            </div>
+            
+            <div className="mt-20 flex flex-wrap items-center justify-center gap-12 border-t border-white/5 pt-12">
+               {[
+                 { label: "SOC2 COMPLIANT", icon: <ShieldCheck className="w-4 h-4" /> },
+                 { label: "85,000+ COMPLETED PROJECTS", icon: <Zap className="w-4 h-4" /> },
+                 { label: "GLOBAL ACCESS", icon: <Globe className="w-4 h-4" /> }
+               ].map((item, i) => (
+                 <div key={i} className="flex items-center gap-3 text-white/30 text-[9px] font-black uppercase tracking-[0.2em]">
+                    {item.icon}
+                    {item.label}
+                 </div>
+               ))}
+            </div>
+          </ScrollReveal>
+        </div>
       </div>
-      
-      {/* Background patterns */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+      {/* Decorative gradients */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
     </section>
   );
 }

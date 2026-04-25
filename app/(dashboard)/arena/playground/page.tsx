@@ -670,7 +670,7 @@ function PracticePhase() {
 
     async function initDb() {
       const SQL = await initSqlJs({
-        locateFile: (file: string) => `https://sql.js.org/dist/${file}`,
+        locateFile: (file: string) => `/${file}`,
       });
       if (cancelled) return;
 

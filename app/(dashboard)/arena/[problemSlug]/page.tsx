@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResultsTable } from "@/components/editor/results-table";
 import { useAIChatStore } from "@/store";
+import { useQuery } from "@tanstack/react-query";
+import {
+  useSqlSandbox,
+  problemToSandbox,
+  DEFAULT_SANDBOX_TABLES,
+  DEFAULT_SANDBOX_DATA,
+} from "@/hooks/use-sql-sandbox";
 import {
   ArrowLeft,
   Play,
@@ -29,134 +36,18 @@ const SQLEditor = dynamic(
   { ssr: false, loading: () => <div className="h-[300px] rounded-xl border border-slate-800 bg-slate-900/50 animate-pulse" /> }
 );
 
-// Dummy problem data (would come from Supabase in production)
-const problemsData: Record<string, {
+// ─── Types ─────────────────────────────────────────────────────────────────
+
+interface ProblemData {
+  id: string;
   title: string;
-  description: string;
+  slug: string;
   difficulty: "easy" | "medium" | "hard";
-  topic: string;
-  starterCode: string;
-  sampleData: { table: string; columns: string[]; rows: string[][] }[];
-  hints: string[];
-}> = {
-  "1": {
-    title: "Select All Employees",
-    description: "Write a query to select all columns from the **employees** table. Return all rows.",
-    difficulty: "easy",
-    topic: "basics",
-    starterCode: "SELECT ",
-    sampleData: [
-      {
-        table: "employees",
-        columns: ["id", "name", "department", "salary", "hire_date"],
-        rows: [
-          ["1", "Alice Johnson", "Engineering", "120000", "2020-01-15"],
-          ["2", "Bob Smith", "Engineering", "110000", "2020-03-20"],
-          ["3", "Carol White", "Marketing", "90000", "2019-06-10"],
-        ],
-      },
-    ],
-    hints: [
-      "Think about how to select everything from a table.",
-      "Use the * wildcard to select all columns.",
-      "The answer is: SELECT * FROM employees;",
-    ],
-  },
-  "2": {
-    title: "Filter by Department",
-    description: "Find all employees who work in the **Engineering** department. Return all columns.",
-    difficulty: "easy",
-    topic: "basics",
-    starterCode: "SELECT * FROM employees\nWHERE ",
-    sampleData: [
-      {
-        table: "employees",
-        columns: ["id", "name", "department", "salary"],
-        rows: [
-          ["1", "Alice Johnson", "Engineering", "120000"],
-          ["2", "Bob Smith", "Engineering", "110000"],
-          ["3", "Carol White", "Marketing", "90000"],
-        ],
-      },
-    ],
-    hints: [
-      "Use a WHERE clause to filter results.",
-      "Compare the department column to the string 'Engineering'.",
-      "WHERE department = 'Engineering'",
-    ],
-  },
-  "3": {
-    title: "Count by Department",
-    description: "Count the number of employees in each department. Show the **department** name and the **count**.",
-    difficulty: "easy",
-    topic: "aggregations",
-    starterCode: "SELECT department, ",
-    sampleData: [
-      {
-        table: "employees",
-        columns: ["id", "name", "department"],
-        rows: [
-          ["1", "Alice Johnson", "Engineering"],
-          ["2", "Bob Smith", "Engineering"],
-          ["3", "Carol White", "Marketing"],
-          ["4", "David Brown", "Sales"],
-        ],
-      },
-    ],
-    hints: [
-      "You need to use GROUP BY.",
-      "Use the COUNT() aggregate function.",
-      "SELECT department, COUNT(*) FROM employees GROUP BY department;",
-    ],
-  },
-  "5": {
-    title: "Employee-Department Join",
-    description: "Join the **employees** table with the **departments** table to show each employee's name, their department name, and the department location.",
-    difficulty: "medium",
-    topic: "joins",
-    starterCode: "",
-    sampleData: [
-      {
-        table: "employees",
-        columns: ["id", "name", "department"],
-        rows: [["1", "Alice Johnson", "Engineering"], ["2", "Bob Smith", "Marketing"]],
-      },
-      {
-        table: "departments",
-        columns: ["id", "name", "location"],
-        rows: [["1", "Engineering", "San Francisco"], ["2", "Marketing", "New York"]],
-      },
-    ],
-    hints: [
-      "You need an INNER JOIN between the two tables.",
-      "Match on employees.department = departments.name.",
-      "SELECT e.name, d.name, d.location FROM employees e JOIN departments d ON e.department = d.name;",
-    ],
-  },
-  "9": {
-    title: "Salary Ranking",
-    description: "Rank all employees by salary within their department using the **RANK()** window function. Show **name**, **department**, **salary**, and **rank**.",
-    difficulty: "hard",
-    topic: "window-functions",
-    starterCode: "",
-    sampleData: [
-      {
-        table: "employees",
-        columns: ["id", "name", "department", "salary"],
-        rows: [
-          ["1", "Alice Johnson", "Engineering", "120000"],
-          ["5", "Eve Davis", "Engineering", "130000"],
-          ["9", "Ivy Chen", "Engineering", "115000"],
-        ],
-      },
-    ],
-    hints: [
-      "Use the RANK() window function.",
-      "PARTITION BY department and ORDER BY salary DESC.",
-      "RANK() OVER (PARTITION BY department ORDER BY salary DESC) as rank",
-    ],
-  },
-};
+  description: string;
+  schema_json: Record<string, string>;
+  sample_data_json: Record<string, Record<string, unknown>[]>;
+  tags: string[];
+}
 
 const difficultyColor = {
   easy: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -170,22 +61,65 @@ const difficultyDot = {
   hard: "bg-rose-500",
 };
 
+// ─── Page ──────────────────────────────────────────────────────────────────
+
 export default function ArenaProblemPage() {
   const params = useParams();
   const problemSlug = params.problemSlug as string;
-  const problem = problemsData[problemSlug];
+  const { togglePanel } = useAIChatStore();
 
-  const [code, setCode] = useState(problem?.starterCode || "");
+  // Fetch problem from API
+  const { data: problem, isLoading, error } = useQuery<ProblemData>({
+    queryKey: ["problem", problemSlug],
+    queryFn: async () => {
+      const res = await fetch(`/api/problems/${problemSlug}`);
+      if (!res.ok) throw new Error("Problem not found");
+      return res.json();
+    },
+  });
+
+  // Convert problem schema to sandbox format
+  const { sandboxTables, sandboxData } = useMemo(() => {
+    if (problem?.schema_json && problem?.sample_data_json) {
+      const { tables, data } = problemToSandbox(
+        problem.schema_json,
+        problem.sample_data_json
+      );
+      return { sandboxTables: tables, sandboxData: data };
+    }
+    return { sandboxTables: DEFAULT_SANDBOX_TABLES, sandboxData: DEFAULT_SANDBOX_DATA };
+  }, [problem]);
+
+  // Initialize client-side SQL sandbox
+  const { ready, runQuery } = useSqlSandbox(sandboxTables, sandboxData);
+
+  const [code, setCode] = useState("");
   const [result, setResult] = useState<QueryResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [submitResult, setSubmitResult] = useState<{
+    success: boolean;
+    status: string;
+    error?: string;
+  } | null>(null);
   const [hintLevel, setHintLevel] = useState(0);
   const [hintText, setHintText] = useState("");
   const [hintLoading, setHintLoading] = useState(false);
-  const { togglePanel } = useAIChatStore();
 
-  if (!problem) {
+  // ─── Loading state ─────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+          <p className="text-slate-400">Loading problem...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Not found ─────────────────────────────────────────────────────────
+  if (error || !problem) {
     return (
       <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center space-y-4">
         <h1 className="text-4xl font-black italic text-slate-700">404</h1>
@@ -197,47 +131,85 @@ export default function ArenaProblemPage() {
     );
   }
 
-  async function handleRun() {
-    if (!code.trim()) return;
+  // ─── Run: Execute locally in sql.js sandbox ────────────────────────────
+  function handleRun() {
+    if (!code.trim() || !ready) return;
     setLoading(true);
     setSubmitted(false);
+    setSubmitResult(null);
+
+    // Run in client-side sandbox
+    const queryResult = runQuery(code.trim());
+    setResult(queryResult);
+    setLoading(false);
+  }
+
+  // ─── Submit: Send to server for validation + logging ───────────────────
+  async function handleSubmit() {
+    if (!code.trim() || !problem) return;
+    setLoading(true);
+    setSubmitted(false);
+    setSubmitResult(null);
     setResult(null);
 
     try {
-      const res = await fetch("/api/sql", {
+      const res = await fetch("/api/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: code.trim() }),
+        body: JSON.stringify({
+          problemId: problem.id,
+          query: code.trim(),
+        }),
       });
       const data = await res.json();
-      setResult(data);
+
+      // Show the result table from server
+      if (data.result) {
+        const columns =
+          Array.isArray(data.result) && data.result.length > 0
+            ? Object.keys(data.result[0])
+            : [];
+        setResult({
+          columns,
+          rows: data.result || [],
+          executionTimeMs: data.executionTime || 0,
+          error: data.error,
+        });
+      } else if (data.error) {
+        setResult({
+          columns: [],
+          rows: [],
+          executionTimeMs: 0,
+          error: typeof data.error === "string" ? data.error : JSON.stringify(data.error),
+        });
+      }
+
+      setSubmitted(true);
+      setSubmitResult({
+        success: data.success || false,
+        status: data.status || "error",
+        error: data.error,
+      });
     } catch {
-      setResult({ columns: [], rows: [], executionTimeMs: 0, error: "Failed to execute query" });
+      setResult({
+        columns: [],
+        rows: [],
+        executionTimeMs: 0,
+        error: "Failed to submit query. Check your connection.",
+      });
+      setSubmitted(true);
+      setSubmitResult({ success: false, status: "error", error: "Connection failed" });
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleSubmit() {
-    await handleRun();
-    setSubmitted(true);
-    if (result && !result.error && result.rows.length > 0) {
-      setIsCorrect(true);
-    } else {
-      setIsCorrect(false);
-    }
-  }
-
+  // ─── Hints: AI-powered progressive hints ───────────────────────────────
   async function handleHint() {
+    if (!problem) return;
     const nextLevel = Math.min(hintLevel + 1, 3);
     setHintLevel(nextLevel);
     setHintLoading(true);
-
-    if (problem.hints[nextLevel - 1]) {
-      setHintText(problem.hints[nextLevel - 1]);
-      setHintLoading(false);
-      return;
-    }
 
     try {
       const res = await fetch("/api/ai", {
@@ -257,6 +229,20 @@ export default function ArenaProblemPage() {
       setHintLoading(false);
     }
   }
+
+  // Build sample data display from schema_json/sample_data_json
+  const sampleTables = Object.entries(problem.sample_data_json || {}).map(
+    ([tableName, rows]) => {
+      const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+      return {
+        table: tableName,
+        columns,
+        rows: rows.map((row) => columns.map((col) => String(row[col] ?? ""))),
+      };
+    }
+  );
+
+  const topicTag = (problem.tags && problem.tags[0]) || "sql";
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white">
@@ -284,8 +270,14 @@ export default function ArenaProblemPage() {
               {problem.difficulty}
             </Badge>
             <Badge variant="outline" className="capitalize text-[10px] border-slate-800 text-slate-400">
-              {problem.topic.replace("-", " ")}
+              {topicTag.replace("-", " ")}
             </Badge>
+            {!ready && (
+              <Badge variant="outline" className="text-[10px] border-amber-500/20 text-amber-400 gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Loading sandbox...
+              </Badge>
+            )}
           </div>
         </motion.div>
 
@@ -311,7 +303,7 @@ export default function ArenaProblemPage() {
             </Card>
 
             {/* Sample Data */}
-            {problem.sampleData.map((dataset) => (
+            {sampleTables.map((dataset) => (
               <Card key={dataset.table} className="bg-slate-900/30 border-slate-800/50 overflow-hidden">
                 <CardHeader className="pb-2 bg-slate-900/50">
                   <CardTitle className="text-xs font-mono flex items-center gap-2">
@@ -364,7 +356,6 @@ export default function ArenaProblemPage() {
                           <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
                         </div>
                         <span className="text-sm font-bold text-amber-400">Hint {hintLevel}/3</span>
-                        {/* Hint progress dots */}
                         <div className="flex items-center gap-1 ml-auto">
                           {[1, 2, 3].map((level) => (
                             <div
@@ -411,7 +402,7 @@ export default function ArenaProblemPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Button
                 onClick={handleRun}
-                disabled={loading}
+                disabled={loading || !ready}
                 variant="outline"
                 className="gap-2 border-slate-800 bg-slate-900/50 hover:bg-slate-800 rounded-xl h-10"
               >
@@ -450,7 +441,7 @@ export default function ArenaProblemPage() {
 
             {/* Submission Result */}
             <AnimatePresence>
-              {submitted && (
+              {submitted && submitResult && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -458,12 +449,12 @@ export default function ArenaProblemPage() {
                   transition={{ type: "spring", bounce: 0.3 }}
                 >
                   <Card className={`overflow-hidden ${
-                    isCorrect
+                    submitResult.success
                       ? "bg-emerald-500/5 border-emerald-500/20"
                       : "bg-rose-500/5 border-rose-500/20"
                   }`}>
                     <CardContent className="p-4 flex items-center gap-4">
-                      {isCorrect ? (
+                      {submitResult.success ? (
                         <>
                           <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
                             <CheckCircle2 className="h-5 w-5 text-emerald-400" />
@@ -479,8 +470,12 @@ export default function ArenaProblemPage() {
                             <XCircle className="h-5 w-5 text-rose-400" />
                           </div>
                           <div>
-                            <p className="font-bold text-rose-400">Incorrect</p>
-                            <p className="text-xs text-slate-400">Check your query and try again. Use hints if needed.</p>
+                            <p className="font-bold text-rose-400">
+                              {submitResult.error ? "Error" : "Incorrect"}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {submitResult.error || "Check your query and try again. Use hints if needed."}
+                            </p>
                           </div>
                         </>
                       )}

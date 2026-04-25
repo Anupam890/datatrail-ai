@@ -9,7 +9,12 @@ import { useEditorStore, useAIChatStore } from "@/store";
 import { Play, Loader2, Sparkles, History, Trash2, Database, Zap } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { QueryResult } from "@/types";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  useSqlSandbox,
+  DEFAULT_SANDBOX_TABLES,
+  DEFAULT_SANDBOX_DATA,
+} from "@/hooks/use-sql-sandbox";
 
 const SQLEditor = dynamic(
   () => import("@/components/editor/sql-editor").then((m) => m.SQLEditor),
@@ -23,38 +28,22 @@ export function PlaygroundTab() {
   const [loading, setLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
-  async function runQuery() {
-    if (!code.trim()) return;
+  // Client-side SQL sandbox
+  const { ready, runQuery } = useSqlSandbox(
+    DEFAULT_SANDBOX_TABLES,
+    DEFAULT_SANDBOX_DATA
+  );
+
+  function handleRun() {
+    if (!code.trim() || !ready) return;
 
     setLoading(true);
     setResult(null);
     addToHistory(code.trim());
 
-    try {
-      const res = await fetch("/api/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: code.trim() }),
-      });
-      const data = await res.json();
-      
-      if (data.error) {
-        setResult({ columns: [], rows: [], executionTimeMs: 0, error: typeof data.error === 'string' ? data.error : JSON.stringify(data.error) });
-      } else {
-        // Map the API result to the QueryResult format
-        const columns = data.result && data.result.length > 0 ? Object.keys(data.result[0]) : [];
-        setResult({
-          columns,
-          rows: data.result || [],
-          executionTimeMs: data.executionTime || 0,
-          error: data.error || null
-        });
-      }
-    } catch {
-      setResult({ columns: [], rows: [], executionTimeMs: 0, error: "Failed to execute query" });
-    } finally {
-      setLoading(false);
-    }
+    const queryResult = runQuery(code.trim());
+    setResult(queryResult);
+    setLoading(false);
   }
 
   return (
@@ -92,18 +81,18 @@ export function PlaygroundTab() {
         <div className="lg:col-span-8 space-y-4">
           <Card className="bg-slate-900/50 border-slate-800 overflow-hidden backdrop-blur-sm">
             <CardContent className="p-0">
-              <SQLEditor value={code} onChange={setCode} onRun={runQuery} height="350px" />
+              <SQLEditor value={code} onChange={setCode} onRun={handleRun} height="350px" />
             </CardContent>
           </Card>
 
           <div className="flex items-center gap-3">
             <Button 
-              onClick={runQuery} 
-              disabled={loading} 
+              onClick={handleRun} 
+              disabled={loading || !ready} 
               className="bg-indigo-600 hover:bg-indigo-500 text-white gap-2 h-11 px-6 font-bold shadow-lg shadow-indigo-500/20"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-current" />}
-              Run Engine
+              {!ready ? "Loading..." : "Run Engine"}
             </Button>
             <Button 
               variant="ghost" 
@@ -136,10 +125,10 @@ export function PlaygroundTab() {
                 <Database className="h-12 w-12 text-slate-800 mx-auto mb-4" />
                 <p className="text-slate-500 text-sm font-medium">Ready to execute. Select a template or write your own.</p>
                 <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  {["employees", "orders", "customers", "departments"].map((table) => (
+                  {["employees", "departments"].map((table) => (
                     <button
                       key={table}
-                      onClick={() => setCode(`SELECT * FROM ${table} LIMIT 10;`)}
+                      onClick={() => setCode(`SELECT * FROM ${table};`)}
                       className="px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50 text-xs text-slate-400 hover:text-white hover:border-slate-600 transition-all font-mono"
                     >
                       {table}
@@ -184,11 +173,11 @@ export function PlaygroundTab() {
             <ul className="text-xs text-slate-400 space-y-3">
               <li className="flex gap-2">
                 <span className="text-indigo-500">•</span>
-                Use window functions like RANK() or LAG() for complex analysis.
+                Available tables: <code className="text-indigo-400">employees</code> and <code className="text-indigo-400">departments</code>.
               </li>
               <li className="flex gap-2">
                 <span className="text-indigo-500">•</span>
-                All queries run in a read-only environment to protect data.
+                Queries run locally in your browser — fast and safe.
               </li>
               <li className="flex gap-2">
                 <span className="text-indigo-500">•</span>
@@ -201,5 +190,3 @@ export function PlaygroundTab() {
     </div>
   );
 }
-
-import { AnimatePresence } from "framer-motion";

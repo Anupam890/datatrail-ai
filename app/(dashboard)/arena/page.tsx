@@ -18,42 +18,23 @@ import {
   Search,
   CheckCircle2,
   Circle,
-  Bookmark,
   Swords,
   Target,
   Flame,
   Trophy,
   Sparkles,
   FlaskConical,
+  Loader2,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Problem {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   difficulty: "easy" | "medium" | "hard";
-  topic: string;
-  solved: boolean;
-  bookmarked: boolean;
+  tags: string[];
 }
-
-const problems: Problem[] = [
-  { id: 1, slug: "select-all-employees", title: "Select All Employees", difficulty: "easy", topic: "basics", solved: true, bookmarked: false },
-  { id: 2, slug: "filter-by-department", title: "Filter by Department", difficulty: "easy", topic: "basics", solved: true, bookmarked: false },
-  { id: 3, slug: "count-by-department", title: "Count by Department", difficulty: "easy", topic: "aggregations", solved: true, bookmarked: false },
-  { id: 4, slug: "average-salary-by-department", title: "Average Salary by Department", difficulty: "easy", topic: "aggregations", solved: false, bookmarked: true },
-  { id: 5, slug: "employee-department-join", title: "Employee-Department Join", difficulty: "medium", topic: "joins", solved: false, bookmarked: false },
-  { id: 6, slug: "top-customers-by-orders", title: "Top Customers by Orders", difficulty: "medium", topic: "aggregations", solved: false, bookmarked: false },
-  { id: 7, slug: "self-join-find-managers", title: "Self Join - Find Managers", difficulty: "medium", topic: "joins", solved: true, bookmarked: false },
-  { id: 8, slug: "orders-with-no-matches", title: "Orders with No Matches", difficulty: "medium", topic: "joins", solved: false, bookmarked: true },
-  { id: 9, slug: "salary-ranking", title: "Salary Ranking", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
-  { id: 10, slug: "running-total-of-orders", title: "Running Total of Orders", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
-  { id: 11, slug: "subquery-above-average-salary", title: "Subquery - Above Average Salary", difficulty: "medium", topic: "subqueries", solved: false, bookmarked: false },
-  { id: 12, slug: "correlated-subquery-department-max", title: "Correlated Subquery - Department Max", difficulty: "hard", topic: "subqueries", solved: false, bookmarked: false },
-  { id: 13, slug: "monthly-order-summary", title: "Monthly Order Summary", difficulty: "medium", topic: "aggregations", solved: false, bookmarked: false },
-  { id: 14, slug: "employees-hired-after-average", title: "Employees Hired After Average", difficulty: "medium", topic: "subqueries", solved: false, bookmarked: false },
-  { id: 15, slug: "dense-rank-with-ties", title: "Dense Rank with Ties", difficulty: "hard", topic: "window-functions", solved: false, bookmarked: false },
-];
 
 const difficultyColor = {
   easy: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -72,18 +53,31 @@ export default function ArenaPage() {
   const [difficulty, setDifficulty] = useState("all");
   const [topic, setTopic] = useState("all");
 
+  const { data: problems = [], isLoading } = useQuery<Problem[]>({
+    queryKey: ["problems"],
+    queryFn: async () => {
+      const res = await fetch("/api/problems");
+      if (!res.ok) throw new Error("Failed to fetch problems");
+      return res.json();
+    },
+  });
+
   const filtered = problems.filter((p) => {
     const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
     const matchDifficulty = difficulty === "all" || p.difficulty === difficulty;
-    const matchTopic = topic === "all" || p.topic === topic;
+    const matchTopic =
+      topic === "all" || (p.tags && p.tags.some((t) => t === topic));
     return matchSearch && matchDifficulty && matchTopic;
   });
 
-  const solvedCount = problems.filter((p) => p.solved).length;
   const easyCount = problems.filter((p) => p.difficulty === "easy").length;
   const mediumCount = problems.filter((p) => p.difficulty === "medium").length;
   const hardCount = problems.filter((p) => p.difficulty === "hard").length;
-  const progress = Math.round((solvedCount / problems.length) * 100);
+
+  // Collect unique topic tags for the filter
+  const allTopics = Array.from(
+    new Set(problems.flatMap((p) => p.tags || []))
+  ).sort();
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white py-8 md:py-12 px-4 md:px-6">
@@ -145,10 +139,10 @@ export default function ArenaPage() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {[
-            { label: "Total Progress", value: `${progress}%`, icon: Target, color: "text-indigo-500", detail: `${solvedCount}/${problems.length} solved` },
-            { label: "Easy", value: easyCount.toString(), icon: Sparkles, color: "text-emerald-500", detail: `${problems.filter(p => p.solved && p.difficulty === "easy").length} solved` },
-            { label: "Medium", value: mediumCount.toString(), icon: Flame, color: "text-amber-500", detail: `${problems.filter(p => p.solved && p.difficulty === "medium").length} solved` },
-            { label: "Hard", value: hardCount.toString(), icon: Trophy, color: "text-rose-500", detail: `${problems.filter(p => p.solved && p.difficulty === "hard").length} solved` },
+            { label: "Total Problems", value: problems.length.toString(), icon: Target, color: "text-indigo-500", detail: `${filtered.length} shown` },
+            { label: "Easy", value: easyCount.toString(), icon: Sparkles, color: "text-emerald-500", detail: "beginner friendly" },
+            { label: "Medium", value: mediumCount.toString(), icon: Flame, color: "text-amber-500", detail: "intermediate" },
+            { label: "Hard", value: hardCount.toString(), icon: Trophy, color: "text-rose-500", detail: "advanced" },
           ].map((stat, i) => (
             <Card key={i} className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-colors">
               <CardContent className="p-4 md:p-5">
@@ -163,27 +157,6 @@ export default function ArenaPage() {
               </CardContent>
             </Card>
           ))}
-        </motion.div>
-
-        {/* Progress Bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-2"
-        >
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span className="font-bold uppercase tracking-widest">Overall Completion</span>
-            <span className="font-mono">{solvedCount}/{problems.length}</span>
-          </div>
-          <div className="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-            />
-          </div>
         </motion.div>
 
         {/* Filters */}
@@ -219,87 +192,91 @@ export default function ArenaPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Topics</SelectItem>
-              <SelectItem value="basics">Basics</SelectItem>
-              <SelectItem value="joins">Joins</SelectItem>
-              <SelectItem value="aggregations">Aggregations</SelectItem>
-              <SelectItem value="subqueries">Subqueries</SelectItem>
-              <SelectItem value="window-functions">Window Functions</SelectItem>
+              {allTopics.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </motion.div>
 
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 text-indigo-400 animate-spin" />
+          </div>
+        )}
+
         {/* Problem List */}
-        <div className="space-y-3">
-          {filtered.map((problem, i) => (
-            <motion.div
-              key={problem.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.03 }}
-            >
-              <Link href={`/arena/${problem.slug}`}>
-                <Card className="bg-slate-900/30 border-slate-800/50 hover:bg-slate-900/60 hover:border-indigo-500/20 transition-all duration-300 cursor-pointer group">
-                  <CardContent className="flex items-center gap-4 p-4 md:p-5">
-                    {/* Status icon */}
-                    <div className="shrink-0">
-                      {problem.solved ? (
-                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                        </div>
-                      ) : (
+        {!isLoading && (
+          <div className="space-y-3">
+            {filtered.map((problem, i) => (
+              <motion.div
+                key={problem.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.03 }}
+              >
+                <Link href={`/arena/${problem.slug}`}>
+                  <Card className="bg-slate-900/30 border-slate-800/50 hover:bg-slate-900/60 hover:border-indigo-500/20 transition-all duration-300 cursor-pointer group">
+                    <CardContent className="flex items-center gap-4 p-4 md:p-5">
+                      {/* Status icon */}
+                      <div className="shrink-0">
                         <div className="h-8 w-8 rounded-lg bg-slate-800/50 flex items-center justify-center group-hover:bg-indigo-500/10 transition-colors">
                           <Circle className="h-4 w-4 text-slate-600 group-hover:text-indigo-400 transition-colors" />
                         </div>
-                      )}
-                    </div>
-
-                    {/* Problem info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-slate-600">{String(problem.id).padStart(2, "0")}</span>
-                        <span className="text-sm font-semibold group-hover:text-white transition-colors truncate">
-                          {problem.title}
-                        </span>
                       </div>
-                    </div>
 
-                    {/* Tags */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {problem.bookmarked && (
-                        <Bookmark className="h-4 w-4 text-amber-500 fill-amber-500" />
-                      )}
-                      <Badge variant="outline" className="text-[10px] capitalize border-slate-800 text-slate-400 hidden sm:inline-flex">
-                        {problem.topic.replace("-", " ")}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={`capitalize text-[10px] gap-1.5 ${difficultyColor[problem.difficulty]}`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${difficultyDot[problem.difficulty]}`} />
-                        {problem.difficulty}
-                      </Badge>
-                    </div>
+                      {/* Problem info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-mono text-slate-600">{String(i + 1).padStart(2, "0")}</span>
+                          <span className="text-sm font-semibold group-hover:text-white transition-colors truncate">
+                            {problem.title}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {problem.tags && problem.tags[0] && (
+                          <Badge variant="outline" className="text-[10px] capitalize border-slate-800 text-slate-400 hidden sm:inline-flex">
+                            {problem.tags[0].replace("-", " ")}
+                          </Badge>
+                        )}
+                        <Badge
+                          variant="outline"
+                          className={`capitalize text-[10px] gap-1.5 ${difficultyColor[problem.difficulty]}`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${difficultyDot[problem.difficulty]}`} />
+                          {problem.difficulty}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </motion.div>
+            ))}
+
+            {filtered.length === 0 && !isLoading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <Card className="bg-slate-900/30 border-slate-800/50">
+                  <CardContent className="p-12 text-center space-y-3">
+                    <Search className="h-8 w-8 text-slate-700 mx-auto" />
+                    <p className="text-slate-500 font-medium">
+                      {problems.length === 0 ? "No problems found. Seed the database with problems." : "No problems match your filters"}
+                    </p>
+                    <p className="text-xs text-slate-600">Try adjusting your search or filter criteria</p>
                   </CardContent>
                 </Card>
-              </Link>
-            </motion.div>
-          ))}
-
-          {filtered.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <Card className="bg-slate-900/30 border-slate-800/50">
-                <CardContent className="p-12 text-center space-y-3">
-                  <Search className="h-8 w-8 text-slate-700 mx-auto" />
-                  <p className="text-slate-500 font-medium">No problems match your filters</p>
-                  <p className="text-xs text-slate-600">Try adjusting your search or filter criteria</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </div>
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
