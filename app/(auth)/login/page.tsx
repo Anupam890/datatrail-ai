@@ -95,7 +95,7 @@ export default function LoginPage() {
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Authenticate
+                  Login
                   <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -117,7 +117,7 @@ export default function LoginPage() {
 
       <AuthFooter 
         text="New to the trail?" 
-        linkText="Join the waitlist" 
+        linkText="Sign Up" 
         href="/signup" 
       />
     </AuthCard>

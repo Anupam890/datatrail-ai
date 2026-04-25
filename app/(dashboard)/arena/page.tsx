@@ -183,7 +183,7 @@ export default function ArenaPage() {
             className="xl:col-span-12 grid grid-cols-2 lg:grid-cols-4 gap-4"
           >
             {[
-              { label: "Active Nodes", value: problems.length, icon: Target, color: "text-indigo-400", sub: "Production Challenges" },
+              { label: "Active Problems", value: problems.length, icon: Target, color: "text-indigo-400", sub: "Production Challenges" },
               { label: "Level: Junior", value: easyCount, icon: Sparkles, color: "text-emerald-400", sub: "Fundamentals" },
               { label: "Level: Senior", value: mediumCount, icon: Flame, color: "text-amber-400", sub: "Architecture" },
               { label: "Level: Staff", value: hardCount, icon: Trophy, color: "text-rose-400", sub: "System Design" },
@@ -259,7 +259,7 @@ export default function ArenaPage() {
         </div>
 
         {/* Challenge Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           <AnimatePresence mode="popLayout">
             {filtered.map((problem, i) => (
               <motion.div
@@ -275,35 +275,43 @@ export default function ArenaPage() {
                 }}
               >
                 <Link href={`/arena/${problem.slug}`}>
-                  <SpotlightCard className="group h-full !p-0 rounded-[2.5rem] bg-slate-900/40 border-white/5 hover:border-indigo-500/30 transition-all duration-500">
-                    <div className="p-8 space-y-6">
-                      <div className="flex items-start justify-between">
-                        <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                          <DatabaseIcon className="h-6 w-6 text-indigo-400" />
-                        </div>
-                        <DifficultyPips difficulty={problem.difficulty} />
+                  <SpotlightCard className="group h-full !p-0 rounded-[2rem] bg-slate-900/40 border-white/5 hover:border-indigo-500/30 transition-all duration-500">
+                    <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+                      <div className="h-12 w-12 shrink-0 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                        <DatabaseIcon className="h-6 w-6 text-indigo-400" />
                       </div>
 
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-black italic tracking-tighter group-hover:text-indigo-400 transition-colors uppercase">
-                          {problem.title}
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {problem.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="text-[9px] font-bold uppercase tracking-widest text-slate-500 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
-                              {tag.replace("-", " ")}
-                            </span>
-                          ))}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <h3 className="text-xl md:text-2xl font-black italic tracking-tighter group-hover:text-indigo-400 transition-colors uppercase">
+                              {problem.title}
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {problem.tags.slice(0, 3).map((tag) => (
+                                <span key={tag} className="text-[9px] font-bold uppercase tracking-widest text-slate-500 px-2 py-1 rounded-lg bg-white/5 border border-white/5">
+                                  {tag.replace("-", " ")}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <DifficultyPips difficulty={problem.difficulty} />
+                            <div className="hidden md:flex items-center gap-2">
+                              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="pt-6 border-t border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                      <div className="md:border-l border-white/5 md:pl-8 flex items-center justify-between md:justify-center">
+                        <div className="md:hidden flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available</span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                          ENTER NODE <ArrowRight className="h-3 w-3" />
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">
+                          SOLVE NOW <ArrowRight className="h-3 w-3" />
                         </div>
                       </div>
                     </div>
@@ -326,7 +334,7 @@ export default function ArenaPage() {
               <Search className="h-16 w-16 text-slate-700 relative z-10 mx-auto" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold tracking-tight">No nodes found in this sector</h3>
+              <h3 className="text-2xl font-bold tracking-tight">No problems found</h3>
               <p className="text-slate-500 max-w-sm mx-auto">Try adjusting your filters or search query to find more challenges.</p>
             </div>
             <Button 
@@ -334,7 +342,7 @@ export default function ArenaPage() {
               onClick={() => { setSearch(""); setDifficulty("all"); setTopic("all"); }}
               className="rounded-xl border-slate-800"
             >
-              Reset Protocols
+              Reset Filters
             </Button>
           </motion.div>
         )}
@@ -346,7 +354,7 @@ export default function ArenaPage() {
               <Loader2 className="h-12 w-12 text-indigo-500 animate-spin" />
               <div className="absolute inset-0 h-12 w-12 bg-indigo-500/20 blur-xl" />
             </div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 animate-pulse">Scanning Neural Network...</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 animate-pulse">Loading Problems...</p>
           </div>
         )}
       </div>

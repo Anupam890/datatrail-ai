@@ -40,7 +40,7 @@ export default function SignupPage() {
     setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Authorization tokens do not match");
+      setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
@@ -59,7 +59,7 @@ export default function SignupPage() {
         router.push("/arena");
       }
     } catch (err) {
-      setError("System handshake failure.");
+      setError("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -154,7 +154,7 @@ export default function SignupPage() {
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <>
-                Initialize Account
+                Register
                 <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </>
             )}
@@ -175,8 +175,8 @@ export default function SignupPage() {
       <OAuthButton />
 
       <AuthFooter
-        text="Already an architect?"
-        linkText="Sign In"
+        text="Already have an account?"
+        linkText="Login"
         href="/login"
       />
     </AuthCard>

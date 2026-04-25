@@ -25,10 +25,10 @@ import { PreferencesSection } from "./PreferencesSection";
 import { SecuritySection } from "./SecuritySection";
 
 const navItems = [
-  { id: "profile", label: "IDENTITY_DETERMINANT", sub: "PROFILE_METADATA", icon: User, description: "Manage your public profile and operator identity" },
-  { id: "account", label: "SYSTEM_ACCESS", sub: "ACCOUNT_ROOT", icon: Cpu, description: "General account settings and core data links" },
-  { id: "preferences", label: "NEURAL_INTERFACE", sub: "UI_CONFIG", icon: Monitor, description: "Editor customization and theme synchronization" },
-  { id: "security", label: "FIREWALL_PROTOCOLS", sub: "SECURITY_GRID", icon: Lock, description: "Encryption keys and active session monitoring" },
+  { id: "profile", label: "Profile Settings", sub: "Profile Info", icon: User, description: "Manage your public profile and user identity" },
+  { id: "account", label: "Account", sub: "General", icon: Cpu, description: "General account settings and core data links" },
+  { id: "preferences", label: "Appearance", sub: "UI Settings", icon: Monitor, description: "Editor customization and theme synchronization" },
+  { id: "security", label: "Security", sub: "Security Settings", icon: Lock, description: "Encryption keys and active session monitoring" },
 ];
 
 export default function SettingsPage() {
@@ -71,7 +71,7 @@ export default function SettingsPage() {
               transition={{ delay: 0.1, duration: 0.6 }}
               className="text-slate-500 max-w-xl text-lg md:text-xl font-medium tracking-tight"
             >
-              Configure your operator environment and manage data trail protocols.
+              Configure your account and manage your application settings.
             </motion.p>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
           <aside className="lg:col-span-4 space-y-6">
             <div className="px-2 flex items-center justify-between">
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600 flex items-center gap-2">
-                <Fingerprint className="h-3.5 w-3.5" /> SECTOR_NAV
+                <Fingerprint className="h-3.5 w-3.5" /> Settings Navigation
               </h2>
               <Sparkles className="h-3.5 w-3.5 text-slate-800" />
             </div>
@@ -142,11 +142,11 @@ export default function SettingsPage() {
                 <div className="space-y-1">
                   <h4 className="text-sm font-black italic uppercase tracking-wider">Need help?</h4>
                   <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
-                    Contact system administration for advanced protocol overrides.
+                    Contact support for advanced overrides.
                   </p>
                 </div>
                 <Button variant="outline" className="w-full rounded-xl border-indigo-500/30 text-indigo-400 font-black italic uppercase tracking-wider text-[10px] h-11">
-                  SUPPORT_TICKET
+                  Open Support Ticket
                 </Button>
               </div>
             </SpotlightCard>

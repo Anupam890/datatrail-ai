@@ -88,7 +88,7 @@ const categories = [
   { name: "QUERY_OPTIMIZATION", count: 850, icon: Zap },
   { name: "SCHEMA_DESIGN", count: 420, icon: Database },
   { name: "ANALYTICS_PATTERNS", count: 180, icon: TrendingUp },
-  { name: "CAREER_NODES", count: 310, icon: Globe },
+  { name: "CAREER_PATHS", count: 310, icon: Globe },
 ];
 
 function ShieldCheckIcon({ className }: { className?: string }) {
@@ -147,7 +147,7 @@ export default function DiscussPage() {
                 transition={{ delay: 0.1, duration: 0.6 }}
                 className="text-slate-400 max-w-xl text-lg md:text-xl font-medium tracking-tight"
               >
-                Peer-to-peer knowledge nodes for complex database engineering and architectural problem solving.
+                Peer-to-peer discussions for complex database engineering and architectural problem solving.
               </motion.p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function DiscussPage() {
           >
             <Button size="lg" className="bg-indigo-600 hover:bg-indigo-500 text-white font-black italic tracking-wider px-8 h-14 rounded-2xl gap-3 shadow-[0_0_30px_rgba(99,102,241,0.2)] transition-all hover:scale-105 active:scale-95">
               <Plus className="h-5 w-5" />
-              INITIALIZE BROADCAST
+              New Post
             </Button>
           </motion.div>
         </div>
@@ -175,7 +175,7 @@ export default function DiscussPage() {
           <div className="relative flex-1 group">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
             <Input
-              placeholder="Search knowledge nodes by title, tags, or operator..."
+              placeholder="Search discussions by title, tags, or user..."
               className="bg-transparent border-none h-16 pl-16 pr-6 text-base font-medium focus:ring-0 placeholder:text-slate-600"
             />
           </div>
@@ -192,7 +192,7 @@ export default function DiscussPage() {
           <div className="lg:col-span-8 space-y-6">
             <div className="flex items-center justify-between px-2">
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                <Globe className="h-3 w-3" /> ACTIVE_TRANSMISSIONS
+                <Globe className="h-3 w-3" /> Active Discussions
               </h2>
               <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-indigo-400">
                 <span>NEWEST</span>
@@ -308,7 +308,7 @@ export default function DiscussPage() {
 
             <SpotlightCard className="!p-8 rounded-[2.5rem] bg-gradient-to-br from-indigo-600/10 to-blue-600/10 border-indigo-500/20 space-y-6">
               <div className="space-y-2">
-                <h4 className="text-lg font-black italic tracking-tighter uppercase">Nexus Protocols</h4>
+                <h4 className="text-lg font-black italic tracking-tighter uppercase">Guidelines</h4>
                 <p className="text-slate-400 text-xs leading-relaxed font-medium">
                   Maintain neural clarity by following sector standards.
                 </p>
@@ -326,7 +326,7 @@ export default function DiscussPage() {
                 ))}
               </div>
               <Button variant="outline" className="w-full rounded-xl border-indigo-500/30 text-indigo-400 font-black italic uppercase tracking-wider text-[10px] h-12">
-                VIEW FULL PROTOCOLS
+                View Guidelines
               </Button>
             </SpotlightCard>
           </div>

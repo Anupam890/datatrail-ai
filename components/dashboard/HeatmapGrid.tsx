@@ -33,16 +33,16 @@ export function HeatmapGrid({ data }: { data?: HeatmapDay[] }) {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-          <Calendar className="h-3.5 w-3.5" /> SUBMISSION_GRID
+          <Calendar className="h-3.5 w-3.5" /> Submission History
         </h3>
         <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-slate-600">
-          <span>LESS_ACTIVITY</span>
+          <span>Less</span>
           <div className="flex gap-1.5">
             {[0, 1, 2, 3, 4].map((v) => (
               <div key={v} className={cn("h-3 w-3 rounded-sm border", getColor(v))} />
             ))}
           </div>
-          <span>MORE_ACTIVITY</span>
+          <span>More</span>
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export function HeatmapGrid({ data }: { data?: HeatmapDay[] }) {
             <div className="flex items-center gap-3">
               <div className={cn("h-2.5 w-2.5 rounded-full", getColor(hoveredDay.count))} />
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                <span className="text-white">{hoveredDay.count} NODES</span> SOLVED ON {new Date(hoveredDay.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+                <span className="text-white">{hoveredDay.count} PROBLEMS</span> SOLVED ON {new Date(hoveredDay.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
               </p>
             </div>
           </motion.div>

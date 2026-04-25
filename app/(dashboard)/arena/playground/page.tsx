@@ -37,10 +37,22 @@ import {
   Clock,
   Hash,
   AlertCircle,
-  ChevronRight,
-  List,
   Search,
-  Zap
+  Zap,
+  Code2,
+  Shuffle,
+  ChevronLeft,
+  Settings,
+  Maximize2,
+  Minimize2,
+  ThumbsUp,
+  ThumbsDown,
+  Share2,
+  Flame,
+  User,
+  Trophy,
+  Command,
+  Monitor
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -189,9 +201,9 @@ function UploadPhase() {
              </div>
              <div className="absolute -inset-4 bg-emerald-500/5 blur-3xl rounded-full" />
           </div>
-          <h2 className="text-4xl font-black italic uppercase tracking-tight text-white">Neural_Matrix_Sync</h2>
+          <h2 className="text-4xl font-black italic uppercase tracking-tight text-white">Import Dataset</h2>
           <p className="text-slate-500 text-sm max-w-sm mx-auto leading-relaxed uppercase tracking-wider font-medium">
-            Inject your CSV data vector to initialize a local SQL sandbox with AI-driven challenge synthesis.
+            Upload your CSV dataset to initialize a local SQL sandbox with AI-generated challenges.
           </p>
         </div>
 
@@ -218,7 +230,7 @@ function UploadPhase() {
                <Upload className={cn("h-6 w-6 transition-colors duration-500", dragOver ? "text-emerald-400" : "text-slate-500 group-hover:text-white")} />
             </div>
             <div className="space-y-2 text-center">
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-white">Initialize_Link</p>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-white">Upload File</p>
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Drag & Drop or Click to browse</p>
             </div>
           </div>
@@ -287,7 +299,7 @@ function PracticePhase() {
   const [code, setCode] = useState("-- Write your SQL vector here\nSELECT * FROM data LIMIT 10;");
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [activeTab, setActiveTab] = useState<"description" | "schema" | "ai">("description");
+  const [activeTab, setActiveTab] = useState<"description" | "solutions" | "submissions">("description");
   const [questionDropdownOpen, setQuestionDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dbRef = useRef<SqlDatabase | null>(null);
@@ -378,116 +390,106 @@ function PracticePhase() {
       {/* ─── Header ─── */}
       <header className="h-12 border-b border-white/5 bg-[#141414] flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/arena">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-white/5 text-slate-400">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+          <Link href="/arena" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center">
+               <Database className="h-4 w-4 text-white" />
+            </div>
           </Link>
           <div className="h-4 w-px bg-white/10 mx-1" />
           
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setQuestionDropdownOpen(!questionDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1 rounded-md bg-white/5 hover:bg-white/10 transition-all text-xs font-bold"
-            >
-              <Hash className="h-3 w-3 text-indigo-400" />
-              <span className="text-white/90 truncate max-w-[200px]">
-                {activeQuestion ? `${activeQuestion.id}. ${activeQuestion.title}` : "Select Challenge"}
-              </span>
-              <ChevronDown className={cn("h-3 w-3 text-slate-500 transition-transform", questionDropdownOpen && "rotate-180")} />
-            </button>
+          <button className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors">
+            <List className="h-4 w-4" />
+            <span>Problem List</span>
+          </button>
 
-            <AnimatePresence>
-              {questionDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4 }}
-                  className="absolute top-full left-0 mt-2 w-80 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-                >
-                  <div className="p-3 border-b border-white/5 bg-white/5">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Available_Challenges ({questions.length})</p>
-                  </div>
-                  <div className="max-h-64 overflow-y-auto p-2 space-y-1">
-                    {questions.length === 0 ? (
-                      <div className="p-4 text-center space-y-3">
-                         <p className="text-[10px] text-slate-500 uppercase font-bold">No Challenges Detected</p>
-                         <Button size="sm" onClick={generateQuestions} disabled={isGeneratingQuestions} className="h-7 text-[8px] font-black uppercase tracking-widest bg-indigo-600">
-                           {isGeneratingQuestions ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2" />}
-                           Synthesize
-                         </Button>
-                      </div>
-                    ) : (
-                      questions.map((q) => (
-                        <button
-                          key={q.id}
-                          onClick={() => { selectQuestion(q); setQuestionDropdownOpen(false); }}
-                          className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all",
-                            activeQuestion?.id === q.id ? "bg-indigo-600/20 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"
-                          )}
-                        >
-                          <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", difficultyDot[q.difficulty])} />
-                          <span className="text-[11px] font-bold flex-1 truncate">{q.id}. {q.title}</span>
-                        </button>
-                      ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="h-4 w-px bg-white/10 mx-1" />
-          
-          <div className="flex items-center gap-2 text-[10px] text-slate-500">
-             <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-500" />
-             <span className="font-mono">{fileName}</span>
-             <span className="opacity-40">/</span>
-             <span className="font-black italic uppercase tracking-tighter text-white/40">{csvData.length} Records</span>
+          <div className="flex items-center gap-1 ml-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white/5 text-slate-500">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white/5 text-slate-500">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white/5 text-slate-500">
+              <Shuffle className="h-3.5 w-3.5" />
+            </Button>
           </div>
         </div>
 
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-white/5 rounded-lg p-0.5 border border-white/5">
+             <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRun}
+                disabled={isExecuting}
+                className="h-7 px-3 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-white/5 gap-2"
+              >
+                {isExecuting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3 fill-indigo-400 text-indigo-400" />}
+                Run
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSubmit}
+                disabled={!activeQuestion}
+                className="h-7 px-3 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 gap-2"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Submit
+              </Button>
+          </div>
+          
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:bg-indigo-500/10">
+            <Sparkles className="h-4 w-4" />
+          </Button>
+        </div>
+
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={resetSession} className="h-7 px-2 text-[8px] font-black uppercase tracking-widest text-slate-600 hover:text-white">
-            <RotateCcw className="h-3 w-3 mr-1" /> Reset
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleRun}
-            disabled={isExecuting}
-            className="h-7 px-3 bg-[#262626] hover:bg-[#333333] text-white border border-white/5 rounded-md text-[9px] font-black uppercase tracking-widest gap-2"
-          >
-            {isExecuting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3 fill-current" />}
-            Run
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={!activeQuestion}
-            className="h-7 px-3 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.2)] rounded-md text-[9px] font-black uppercase tracking-widest gap-2 transition-all"
-          >
-            <CheckCircle2 className="h-3 w-3" />
-            Submit
-          </Button>
+          <div className="flex items-center gap-4 mr-4">
+            <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 cursor-pointer">
+               <Flame className="h-4 w-4" />
+               <span className="text-xs font-bold">0</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 cursor-pointer">
+               <Clock className="h-4 w-4" />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+              <Settings className="h-4 w-4" />
+            </Button>
+            <div className="h-8 w-8 rounded-full bg-indigo-600/20 border border-indigo-500/20 flex items-center justify-center">
+              <User className="h-4 w-4 text-indigo-400" />
+            </div>
+            <Button size="sm" className="h-7 bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-tight">
+              Premium
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* ─── Main ─── */}
       <main className="flex-1 flex overflow-hidden">
         {/* Left */}
-        <div className="w-[40%] flex flex-col border-r border-white/5 bg-[#0F0F0F]">
-          <div className="h-9 border-b border-white/5 flex items-center px-4 gap-6 bg-[#1A1A1A]">
-            {(["description", "schema", "ai"] as const).map((tab) => (
+        <div className="w-[45%] flex flex-col border-r border-white/5 bg-[#0F0F0F] relative">
+          <div className="h-9 border-b border-white/5 flex items-center px-2 bg-[#1A1A1A] shrink-0">
+            {[
+              { id: "description", label: "Description", icon: FileSpreadsheet },
+              { id: "solutions", label: "Solutions", icon: Lightbulb },
+              { id: "submissions", label: "Submissions", icon: Clock },
+            ].map((tab) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
                 className={cn(
-                  "h-full relative text-[8px] font-black uppercase tracking-[0.2em] transition-colors",
-                  activeTab === tab ? "text-white" : "text-slate-500 hover:text-slate-300"
+                  "h-full px-4 flex items-center gap-2 text-[10px] font-bold transition-all relative",
+                  activeTab === tab.id ? "text-white" : "text-slate-500 hover:text-slate-300"
                 )}
               >
-                {tab === "ai" ? "Neural Decoder" : tab}
-                {activeTab === tab && <motion.div layoutId="arenaTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />}
+                <tab.icon className={cn("h-3 w-3", activeTab === tab.id ? "text-indigo-400" : "text-slate-600")} />
+                {tab.label}
+                {activeTab === tab.id && <motion.div layoutId="arenaTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />}
               </button>
             ))}
           </div>
@@ -495,27 +497,78 @@ function PracticePhase() {
           <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
             <AnimatePresence mode="wait">
               {activeTab === "description" && (
-                <motion.div key="desc" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                <motion.div key="desc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                   {activeQuestion ? (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-black italic uppercase tracking-tight text-white">{activeQuestion.title}</h2>
-                        <span className={cn("text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-white/5", difficultyColor[activeQuestion.difficulty])}>
-                          {activeQuestion.difficulty}
-                        </span>
-                      </div>
-                      <p className="text-slate-400 leading-relaxed text-sm">{activeQuestion.description}</p>
-                      {activeQuestion.approach && (
-                        <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
-                           <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-500">Tactical_Approach</h4>
-                           <p className="text-xs text-slate-400 leading-relaxed">{activeQuestion.approach}</p>
+                    <div className="space-y-6 pb-20">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-2xl font-bold text-white">{activeQuestion.id}. {activeQuestion.title}</h2>
+                          <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-bold">
+                             <span>Solved</span>
+                             <CheckCircle2 className="h-4 w-4" />
+                          </div>
                         </div>
-                      )}
+                        
+                        <div className="flex items-center gap-2">
+                          <Badge className={cn("rounded-full px-3 py-0.5 border-none font-bold capitalize", difficultyColor[activeQuestion.difficulty])}>
+                            {activeQuestion.difficulty}
+                          </Badge>
+                          <Button variant="outline" size="sm" className="h-6 rounded-full bg-white/5 border-white/10 text-[10px] text-slate-400 gap-1.5">
+                             <Hash className="h-3 w-3" /> Topics
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-6 rounded-full bg-white/5 border-white/10 text-[10px] text-slate-400 gap-1.5">
+                             <Database className="h-3 w-3" /> Companies
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-6 rounded-full bg-white/5 border-white/10 text-[10px] text-slate-400 gap-1.5 ml-auto">
+                             <Lightbulb className="h-3 w-3" /> Hint
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="prose prose-invert max-w-none">
+                        <p className="text-slate-300 leading-relaxed text-[13px]">{activeQuestion.description}</p>
+                      </div>
+
+                      {/* Examples */}
+                      <div className="space-y-6">
+                         {[1, 2].map(i => (
+                           <div key={i} className="space-y-3">
+                              <h4 className="text-xs font-bold text-white">Example {i}:</h4>
+                              <div className="bg-white/[0.03] border border-white/5 rounded-lg p-4 font-mono text-[11px] space-y-1">
+                                 <p><span className="text-slate-500 font-bold">Input:</span> <span className="text-slate-300">data_table_{i}, target = 10</span></p>
+                                 <p><span className="text-slate-500 font-bold">Output:</span> <span className="text-slate-300">[1, 4]</span></p>
+                                 <p><span className="text-slate-500 font-bold">Explanation:</span> <span className="text-slate-400 italic">Because rows at index 1 and 4 satisfy the criteria.</span></p>
+                              </div>
+                           </div>
+                         ))}
+                      </div>
+
+                      {/* Bottom Footer */}
+                      <div className="absolute bottom-0 left-0 right-0 h-10 border-t border-white/5 bg-[#0F0F0F] flex items-center justify-between px-4">
+                         <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5 text-slate-500 hover:text-white cursor-pointer transition-colors">
+                               <ThumbsUp className="h-4 w-4" />
+                               <span className="text-[10px] font-bold">68.8K</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-slate-500 hover:text-white cursor-pointer transition-colors">
+                               <ThumbsDown className="h-4 w-4" />
+                            </div>
+                            <div className="flex items-center gap-1.5 text-slate-500 hover:text-white cursor-pointer transition-colors">
+                               <MessageSquare className="h-4 w-4" />
+                               <span className="text-[10px] font-bold">2K</span>
+                            </div>
+                            <Share2 className="h-4 w-4 text-slate-500 hover:text-white cursor-pointer transition-colors" />
+                         </div>
+                         <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-bold text-slate-500">1731 Online</span>
+                         </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center space-y-4 pt-20">
                       <BrainCircuit className="h-12 w-12 text-slate-800" />
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-700">Awaiting_Neural_Input</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-700">Awaiting Input</p>
                       <Button onClick={generateQuestions} disabled={isGeneratingQuestions} variant="outline" className="h-8 text-[9px] font-black uppercase tracking-widest border-white/10">
                         {isGeneratingQuestions ? "Generating..." : "Generate Challenges"}
                       </Button>
@@ -524,36 +577,80 @@ function PracticePhase() {
                 </motion.div>
               )}
 
-              {activeTab === "schema" && (
-                <motion.div key="schema" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Table_Schema: {tableName}</h3>
-                  <div className="grid gap-2">
-                    {csvColumns.map((col) => (
-                      <div key={col} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/5">
-                        <span className="text-xs font-mono text-slate-300">{col}</span>
-                        <span className="text-[9px] font-mono text-slate-600 uppercase">TEXT</span>
-                      </div>
-                    ))}
+              {activeTab === "solutions" && (
+                <motion.div key="solutions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                     <h3 className="text-lg font-bold text-white">Community Solutions</h3>
+                     <Button 
+                       variant="outline" 
+                       size="sm" 
+                       onClick={handleGetHelp}
+                       disabled={isAiHelpLoading || !activeQuestion}
+                       className="h-7 text-[10px] font-bold border-white/10 bg-white/5"
+                     >
+                        {isAiHelpLoading ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Sparkles className="h-3 w-3 mr-2 text-indigo-400" />}
+                        AI Solution
+                     </Button>
+                  </div>
+                  
+                  {aiHelp && (
+                    <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 space-y-3">
+                       <div className="flex items-center gap-2">
+                          <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">AI Tutor Insights</span>
+                       </div>
+                       <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{aiHelp}</p>
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                     {[1, 2, 3].map(i => (
+                       <div key={i} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors cursor-pointer group">
+                          <div className="flex items-center justify-between mb-2">
+                             <div className="flex items-center gap-2">
+                                <div className="h-6 w-6 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center">
+                                   <User className="h-3 w-3 text-slate-500" />
+                                </div>
+                                <span className="text-[11px] font-bold text-slate-300">Solution_{i * 123}</span>
+                             </div>
+                             <div className="flex items-center gap-3 text-slate-500 text-[10px]">
+                                <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" /> {400 - i * 50}</span>
+                                <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {20 - i * 5}</span>
+                             </div>
+                          </div>
+                          <p className="text-xs text-slate-400 line-clamp-2">This approach uses a hash map to achieve O(N) time complexity by storing the complements of each number as we iterate...</p>
+                       </div>
+                     ))}
                   </div>
                 </motion.div>
               )}
 
-              {activeTab === "ai" && (
-                <motion.div key="ai" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                  <div className="p-6 rounded-2xl bg-indigo-600/5 border border-indigo-500/10 space-y-6">
-                    <div className="space-y-2">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Neural_Intelligence_Unit</h4>
-                      <p className="text-xs text-slate-400 leading-relaxed">AI will analyze the current cluster to provide tactical insights.</p>
-                    </div>
-                    <Button onClick={handleGetHelp} disabled={isAiHelpLoading || !activeQuestion} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest h-9">
-                      {isAiHelpLoading ? "Thinking..." : "Initiate Neural Decode"}
-                    </Button>
+              {activeTab === "submissions" && (
+                <motion.div key="submissions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                  <h3 className="text-lg font-bold text-white">My Submissions</h3>
+                  <div className="space-y-2">
+                     {[1, 2].map(i => (
+                       <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                          <div className="flex flex-col gap-1">
+                             <span className="text-xs font-bold text-emerald-400">Accepted</span>
+                             <span className="text-[10px] text-slate-500 font-medium">April 25, 2026 20:45</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-[11px] font-mono">
+                             <span className="text-slate-300">45ms</span>
+                             <span className="text-slate-500">|</span>
+                             <span className="text-slate-300">12.4 MB</span>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-7 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10">
+                             View
+                          </Button>
+                       </div>
+                     ))}
+                     {questions.length === 0 && (
+                        <div className="h-40 flex flex-col items-center justify-center opacity-20">
+                           <Clock className="h-8 w-8 mb-2" />
+                           <p className="text-[10px] font-bold uppercase tracking-widest">No Submissions Yet</p>
+                        </div>
+                     )}
                   </div>
-                  {aiHelp && (
-                    <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10">
-                      <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{aiHelp}</p>
-                    </div>
-                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -562,28 +659,61 @@ function PracticePhase() {
 
         {/* Right */}
         <div className="flex-1 flex flex-col bg-[#050505]">
-          <div className="flex-1 flex flex-col min-h-0 border-b border-white/5">
-            <div className="h-9 border-b border-white/5 flex items-center px-4 bg-[#1A1A1A]">
-              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-indigo-400">
-                <Code2 className="h-3 w-3" /> SQL_Execution_Vessel
-              </div>
+          {/* Editor Header */}
+          <div className="h-9 border-b border-white/5 flex items-center justify-between px-4 bg-[#1A1A1A] shrink-0">
+            <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-400">
+              <Code2 className="h-3.5 w-3.5" />
+              <span>Code</span>
             </div>
-            <div className="flex-1 overflow-hidden">
-               <SQLEditor value={code} onChange={setCode} onRun={handleRun} height="100%" />
+            <div className="flex items-center gap-4">
+               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold hover:text-white cursor-pointer">
+                  <span>SQL</span>
+                  <ChevronDown className="h-3 w-3" />
+               </div>
+               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold hover:text-white cursor-pointer">
+                  <Clock className="h-3 w-3" />
+                  <span>Auto</span>
+               </div>
+               <div className="h-4 w-px bg-white/10" />
+               <div className="flex items-center gap-3 text-slate-500">
+                  <Settings className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
+                  <Copy className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
+                  <RotateCcw className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
+                  <Maximize2 className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
+               </div>
             </div>
           </div>
-          <div className="h-[35%] flex flex-col min-h-0 bg-[#0F0F0F]">
+
+          <div className="flex-1 relative overflow-hidden">
+             <SQLEditor value={code} onChange={setCode} onRun={handleRun} height="100%" />
+             
+             {/* Editor Bottom Bar */}
+             <div className="absolute bottom-0 left-0 right-0 h-6 bg-[#0A0A0A] border-t border-white/5 flex items-center justify-between px-3 z-10">
+                <span className="text-[9px] font-medium text-slate-600">Saved</span>
+                <span className="text-[9px] font-medium text-slate-600">Ln 1, Col 1</span>
+             </div>
+          </div>
+
+          {/* Console / Test Results */}
+          <div className="h-[30%] flex flex-col min-h-0 bg-[#0F0F0F] border-t border-white/10">
             <div className="h-9 border-b border-white/5 flex items-center justify-between px-4 bg-[#1A1A1A]">
-              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-emerald-400">
-                <Terminal className="h-3 w-3" /> Console_Feedback
+              <div className="flex items-center gap-6">
+                <button className="flex items-center gap-2 text-[10px] font-bold text-emerald-400 h-full border-b-2 border-emerald-500 px-1">
+                   <CheckCircle2 className="h-3 w-3" />
+                   Testcase
+                </button>
+                <button className="flex items-center gap-2 text-[10px] font-bold text-slate-500 h-full hover:text-slate-300 transition-colors">
+                   <Terminal className="h-3 w-3" />
+                   Test Result
+                </button>
               </div>
-              {queryResult && <span className="text-[8px] font-mono text-slate-600 uppercase">{queryResult.executionTimeMs}ms</span>}
+              <ChevronDown className="h-4 w-4 text-slate-600 hover:text-white cursor-pointer transition-colors" />
             </div>
             <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
               {queryResult ? <ResultsTable result={queryResult} /> : (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
                   <Terminal className="h-10 w-10 text-slate-400 mb-4" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em]">Matrix_Idle</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em]">Console Idle</p>
                 </div>
               )}
             </div>

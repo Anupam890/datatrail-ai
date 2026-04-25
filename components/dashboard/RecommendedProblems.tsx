@@ -19,7 +19,7 @@ export function RecommendedProblems({ problems }: { problems?: Problem[] }) {
     return (
       <div className="rounded-[2rem] border border-white/5 bg-slate-900/40 p-8 backdrop-blur-xl text-center">
         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-relaxed">
-          All nodes synchronized. No new recommendations available.
+          Everything up to date. No new recommendations available.
         </p>
       </div>
     );
@@ -74,7 +74,7 @@ export function RecommendedProblems({ problems }: { problems?: Problem[] }) {
       </div>
       
       <Link href="/arena" className="flex items-center justify-center gap-2 group p-4 rounded-2xl border border-dashed border-white/5 text-slate-600 hover:text-indigo-400 hover:border-indigo-500/20 transition-all">
-        <span className="text-[10px] font-black uppercase tracking-[0.2em]">ACCESS ALL NODES</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em]">View All Problems</span>
         <ChevronRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
       </Link>
     </div>

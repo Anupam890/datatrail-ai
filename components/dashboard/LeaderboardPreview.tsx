@@ -27,7 +27,7 @@ export function LeaderboardPreview({ users }: { users?: LeaderboardUser[] }) {
     return (
       <div className="rounded-[2.5rem] border border-white/5 bg-slate-900/40 p-8 backdrop-blur-xl text-center">
         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-relaxed">
-          No ranking data synchronized.
+          No ranking data found.
         </p>
       </div>
     );
@@ -58,10 +58,10 @@ export function LeaderboardPreview({ users }: { users?: LeaderboardUser[] }) {
                   "text-xs font-black italic uppercase tracking-tighter",
                   user.isCurrent ? "text-indigo-400" : "text-white"
                 )}>
-                  {user.name} {user.isCurrent && "(OPERATOR)"}
+                  {user.name} {user.isCurrent && "(YOU)"}
                 </span>
                 <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-0.5">
-                  {user.solved} NODES_SOLVED
+                  {user.solved} Problems Solved
                 </span>
               </div>
             </div>
@@ -77,7 +77,7 @@ export function LeaderboardPreview({ users }: { users?: LeaderboardUser[] }) {
         href="/ranks" 
         className="flex items-center justify-center gap-2 p-5 bg-white/5 border-t border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
       >
-        ACCESS GLOBAL_STANDINGS
+        View Full Leaderboard
         <ChevronRight className="h-3 w-3" />
       </Link>
     </div>

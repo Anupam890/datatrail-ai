@@ -92,7 +92,7 @@ export default function UnifiedProfilePage() {
           <Loader2 className="h-12 w-12 text-indigo-500 animate-spin" />
           <div className="absolute inset-0 bg-indigo-500/20 blur-xl" />
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 animate-pulse">Accessing Dossier...</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 animate-pulse">Loading Profile...</p>
       </div>
     );
   }
@@ -101,9 +101,9 @@ export default function UnifiedProfilePage() {
     return (
       <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center space-y-6">
         <h1 className="text-8xl font-black italic text-slate-900 tracking-tighter">404</h1>
-        <p className="text-slate-500 font-bold uppercase tracking-widest">Operator Not Found</p>
+        <p className="text-slate-500 font-bold uppercase tracking-widest">User Not Found</p>
         <Button variant="outline" className="rounded-2xl border-slate-800" onClick={() => window.history.back()}>
-          Return to Nexus
+          Return to Community
         </Button>
       </div>
     );
@@ -127,7 +127,7 @@ export default function UnifiedProfilePage() {
 
       <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 space-y-12">
         
-        {/* Dossier Header */}
+        {/* Profile Header */}
         <div className="flex flex-col lg:flex-row gap-10 items-start lg:items-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
@@ -163,7 +163,7 @@ export default function UnifiedProfilePage() {
                 {isOwner && (
                   <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                    <span className="text-[10px] font-black tracking-widest text-emerald-400 uppercase">Verified Operator</span>
+                    <span className="text-[10px] font-black tracking-widest text-emerald-400 uppercase">Verified User</span>
                   </div>
                 )}
               </motion.div>
@@ -201,7 +201,7 @@ export default function UnifiedProfilePage() {
               </div>
               {isOwner ? (
                 <Button variant="ghost" size="sm" className="h-10 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-indigo-400 gap-2">
-                  <Settings className="h-3.5 w-3.5" /> Configure Terminal
+                  <Settings className="h-3.5 w-3.5" /> Edit Profile
                 </Button>
               ) : (
                 <Button variant="ghost" size="sm" className="h-10 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-indigo-400 gap-2">
@@ -215,7 +215,7 @@ export default function UnifiedProfilePage() {
             {[
               { label: "STREAK", value: profile.streak || 0, icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10" },
               { label: "POWER", value: profile.xp || 0, icon: Zap, color: "text-indigo-400", bg: "bg-indigo-400/10" },
-              { label: "NODES", value: profile.total_solved || 0, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+              { label: "SOLVED", value: profile.total_solved || 0, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-400/10" },
             ].map((stat, i) => (
               <div key={i} className="glass-premium p-6 rounded-[2rem] flex flex-col items-center justify-center space-y-2 min-w-[120px]">
                 <div className={cn("p-2 rounded-xl mb-1", stat.bg, stat.color)}>
@@ -280,7 +280,7 @@ export default function UnifiedProfilePage() {
                         <ArrowUpRight className="h-5 w-5 text-slate-800 group-hover:text-emerald-500 transition-colors" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Nodes Solved</p>
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Problems Solved</p>
                         <p className="text-4xl font-black italic tracking-tighter">{profile.total_solved || 0}</p>
                       </div>
                     </SpotlightCard>
@@ -301,7 +301,7 @@ export default function UnifiedProfilePage() {
 
                   <div className="space-y-6">
                     <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                      <History className="h-3 w-3" /> NEURAL_ACTIVITY
+                      <History className="h-3 w-3" /> Recent Activity
                     </h3>
                     <SpotlightCard className="!p-8 rounded-[3rem] bg-slate-900/40 border-white/5">
                       <HeatmapGrid data={profileData.heatmapData} />
@@ -310,7 +310,7 @@ export default function UnifiedProfilePage() {
 
                   <div className="space-y-6">
                     <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                      <Star className="h-3 w-3 text-amber-500" /> ACHIEVEMENT_STRIPS
+                      <Star className="h-3 w-3 text-amber-500" /> Achievements
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {achievements.map((ach, i) => (
@@ -335,13 +335,13 @@ export default function UnifiedProfilePage() {
                     <>
                       <div className="space-y-6">
                         <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                          <Zap className="h-3 w-3" /> DAILY_DIRECTIVE
+                          <Zap className="h-3 w-3" /> Daily Challenge
                         </h3>
                         <DailyChallenge challenge={profileData.dailyChallenge} />
                       </div>
                       <div className="space-y-6">
                         <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                          <Sparkles className="h-3 w-3" /> RECOMMENDED_VECTORS
+                          <Sparkles className="h-3 w-3" /> Recommended Problems
                         </h3>
                         <RecommendedProblems problems={profileData.recommendedProblems} />
                       </div>
@@ -354,7 +354,7 @@ export default function UnifiedProfilePage() {
                       <div className="space-y-2">
                         <h2 className="text-2xl font-black italic tracking-tighter uppercase">Join the Elite</h2>
                         <p className="text-slate-400 text-xs font-bold leading-relaxed">
-                          Build your own dossier and compete in the global SQL arena.
+                          Build your own profile and compete in the global SQL arena.
                         </p>
                       </div>
                       <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black italic uppercase tracking-widest h-12 rounded-xl">
@@ -365,7 +365,7 @@ export default function UnifiedProfilePage() {
                   
                   <div className="space-y-6">
                     <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-                      <Trophy className="h-3 w-3" /> PEER_COMPARISON
+                      <Trophy className="h-3 w-3" /> Leaderboard
                     </h3>
                     <LeaderboardPreview users={profileData.leaderboard} />
                   </div>

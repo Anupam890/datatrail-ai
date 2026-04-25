@@ -39,26 +39,26 @@ export function SubmissionTable({ submissions }: { submissions?: Submission[] })
     <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900/20 backdrop-blur-xl border border-white/5">
       <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
-          <Fingerprint className="h-3.5 w-3.5" /> RECENT_SUBMISSIONS
+          <Fingerprint className="h-3.5 w-3.5" /> Recent Submissions
         </h3>
         <div className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[8px] font-black uppercase tracking-widest text-indigo-400">
-          LOG_COUNT: {data.length}
+          Total Submissions: {data.length}
         </div>
       </div>
       
       {data.length === 0 ? (
         <div className="px-8 py-20 text-center">
-          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">No submission logs found in primary database.</p>
+          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">No submissions found.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                <th className="px-8 py-5 font-black">PROBLEM_NODE</th>
-                <th className="px-8 py-5 font-black">STATUS_PROTOCOL</th>
-                <th className="px-8 py-5 font-black">DIFFICULTY_INDEX</th>
-                <th className="px-8 py-5 font-black text-right">TIMESTAMP</th>
+                <th className="px-8 py-5 font-black">Problem</th>
+                <th className="px-8 py-5 font-black">Status</th>
+                <th className="px-8 py-5 font-black">Difficulty</th>
+                <th className="px-8 py-5 font-black text-right">Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -72,7 +72,7 @@ export function SubmissionTable({ submissions }: { submissions?: Submission[] })
                 >
                   <td className="px-8 py-6">
                     <span className="text-sm font-black italic tracking-tighter uppercase group-hover:text-indigo-400 transition-colors">
-                      {sub.problems?.title || "UNKNOWN_NODE"}
+                      {sub.problems?.title || "Unknown Problem"}
                     </span>
                   </td>
                   <td className="px-8 py-6">
