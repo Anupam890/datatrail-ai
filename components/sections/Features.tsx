@@ -111,7 +111,7 @@ const DashboardPreview = () => (
     <div className="col-span-2 p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
       <div className="flex gap-1">
         {[...Array(12)].map((_, i) => (
-          <div key={i} className={`w-3 h-3 rounded-sm ${Math.random() > 0.5 ? 'bg-rose-500/40' : 'bg-white/5'}`} />
+          <div key={i} className={`w-3 h-3 rounded-sm ${i % 3 === 0 ? 'bg-rose-500/40' : 'bg-white/5'}`} />
         ))}
       </div>
       <span className="text-[8px] text-muted-foreground font-bold">SKILL HEATMAP</span>

@@ -1,15 +1,22 @@
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { getServiceSupabase } from "@/lib/supabase";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = await params;
-  const { voteType, userId } = await request.json();
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  if (!userId || !voteType) {
+  const { slug } = await params;
+  const { voteType } = await request.json();
+  const userId = session.user.id;
+
+  if (!voteType) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useAIChatStore } from "@/store";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import ReactMarkdown from "react-markdown";
 import {
   X,
   Send,
@@ -28,17 +28,16 @@ const quickActions = [
 export function AIChatPanel() {
   const { messages, isOpen, isLoading, addMessage, setLoading, clearMessages, setOpen } = useAIChatStore();
   const [input, setInput] = useState("");
+  const [streamingContent, setStreamingContent] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, streamingContent]);
 
-  if (!isOpen) return null;
-
-  async function sendMessage(content: string, action: string = "chat") {
+  const sendMessage = useCallback(async (content: string, action: string = "chat") => {
     if (!content.trim()) return;
 
     const userMsg: ChatMessage = {
@@ -50,6 +49,7 @@ export function AIChatPanel() {
     addMessage(userMsg);
     setInput("");
     setLoading(true);
+    setStreamingContent("");
 
     try {
       const res = await fetch("/api/ai", {
@@ -65,14 +65,43 @@ export function AIChatPanel() {
             .join("\n"),
         }),
       });
-      const data = await res.json();
-      const assistantMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.result || data.error || "No response",
-        timestamp: Date.now(),
-      };
-      addMessage(assistantMsg);
+
+      if (!res.ok) {
+        throw new Error("Request failed");
+      }
+
+      // Stream the response
+      if (res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulated = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          accumulated += decoder.decode(value, { stream: true });
+          setStreamingContent(accumulated);
+        }
+
+        // Finalize: add as a complete message
+        const assistantMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: accumulated || "No response",
+          timestamp: Date.now(),
+        };
+        addMessage(assistantMsg);
+        setStreamingContent("");
+      } else {
+        // Fallback for non-streaming response
+        const data = await res.json();
+        addMessage({
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.result || data.error || "No response",
+          timestamp: Date.now(),
+        });
+      }
     } catch {
       addMessage({
         id: (Date.now() + 1).toString(),
@@ -80,10 +109,13 @@ export function AIChatPanel() {
         content: "Failed to connect to AI. Check your API key configuration.",
         timestamp: Date.now(),
       });
+      setStreamingContent("");
     } finally {
       setLoading(false);
     }
-  }
+  }, [messages, addMessage, setLoading]);
+
+  if (!isOpen) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,7 +166,7 @@ export function AIChatPanel() {
       {/* Messages */}
       <ScrollArea className="flex-1 p-3" ref={scrollRef}>
         <div className="space-y-3">
-          {messages.length === 0 && (
+          {messages.length === 0 && !streamingContent && (
             <div className="text-center py-8">
               <Sparkles className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
               <p className="text-sm text-muted-foreground">Ask me anything about SQL!</p>
@@ -153,11 +185,27 @@ export function AIChatPanel() {
                     : "bg-muted"
                 }`}
               >
-                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{msg.content}</pre>
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_pre]:bg-black/30 [&_pre]:rounded [&_pre]:p-2 [&_pre]:text-xs [&_code]:text-xs [&_code]:bg-black/20 [&_code]:px-1 [&_code]:rounded [&_p]:text-sm [&_p]:leading-relaxed [&_li]:text-sm [&_h2]:text-sm [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{msg.content}</pre>
+                )}
               </div>
             </div>
           ))}
-          {isLoading && (
+          {/* Streaming message */}
+          {streamingContent && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-lg px-3 py-2 text-sm bg-muted">
+                <div className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_pre]:bg-black/30 [&_pre]:rounded [&_pre]:p-2 [&_pre]:text-xs [&_code]:text-xs [&_code]:bg-black/20 [&_code]:px-1 [&_code]:rounded [&_p]:text-sm [&_p]:leading-relaxed [&_li]:text-sm [&_h2]:text-sm [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-1">
+                  <ReactMarkdown>{streamingContent}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+          {isLoading && !streamingContent && (
             <div className="flex justify-start">
               <div className="bg-muted rounded-lg px-3 py-2">
                 <Loader2 className="h-4 w-4 animate-spin" />

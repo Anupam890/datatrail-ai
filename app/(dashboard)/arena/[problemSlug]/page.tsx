@@ -54,6 +54,8 @@ import {
   Lock,
   Users,
   Link2,
+  Bot,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QueryResult } from "@/types";
@@ -89,14 +91,14 @@ function Hint({
   side = "top",
   align = "center"
 }: { 
-  children: React.ReactNode; 
+  children: React.ReactElement; 
   text: string; 
   side?: "top" | "bottom" | "left" | "right";
   align?: "start" | "center" | "end";
 }) {
   return (
     <Tooltip delayDuration={300}>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipTrigger render={children} />
       <TooltipContent 
         side={side} 
         align={align}
@@ -315,6 +317,9 @@ export default function ArenaProblemPage() {
   const [hintText, setHintText] = useState("");
   const [hintLoading, setHintLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"description" | "solutions" | "submissions">("description");
+  const [reviewText, setReviewText] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   // Fetch Community Solutions
   const { data: solutions, refetch: refetchSolutions } = useQuery({
@@ -398,6 +403,37 @@ export default function ArenaProblemPage() {
         status: data.status || "error",
         error: data.error,
       });
+
+      // Trigger AI code review in background
+      setReviewLoading(true);
+      setReviewOpen(true);
+      setReviewText("");
+      fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "review",
+          query: code.trim(),
+          problem: problem.description,
+          schema: JSON.stringify(problem.schema_json),
+          status: data.success ? "accepted" : "rejected",
+          error: data.error || "None",
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok || !res.body) throw new Error("Review failed");
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let accumulated = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            accumulated += decoder.decode(value, { stream: true });
+            setReviewText(accumulated);
+          }
+        })
+        .catch(() => setReviewText("Could not generate review. Try again later."))
+        .finally(() => setReviewLoading(false));
     } catch {
       setResult({
         columns: [],
@@ -534,11 +570,9 @@ export default function ArenaProblemPage() {
         }}
       >
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild className="h-8 gap-2 text-slate-400 hover:text-white transition-colors">
-            <Link href="/arena">
-              <List className="h-4 w-4" />
-              <span>Problem List</span>
-            </Link>
+          <Button variant="ghost" size="sm" render={<Link href="/arena" />} className="h-8 gap-2 text-slate-400 hover:text-white transition-colors">
+            <List className="h-4 w-4" />
+            <span>Problem List</span>
           </Button>
 
           <div className="flex items-center gap-1 ml-2">
@@ -641,48 +675,46 @@ export default function ArenaProblemPage() {
                 </div>
               </Hint>
 
+              {activePopover === "timer" && <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)} />}
               <AnimatePresence>
                 {activePopover === "timer" && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)} />
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 p-5"
-                    >
-                      <div className="grid grid-cols-2 gap-3 mb-5">
-                        <button 
-                          onClick={() => setTimerMode("stopwatch")}
-                          className={cn(
-                            "flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all",
-                            timerMode === "stopwatch" ? "bg-white/5 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.1)]" : "bg-transparent border-white/5 hover:bg-white/[0.02]"
-                          )}
-                        >
-                          <Clock className={cn("h-7 w-7", timerMode === "stopwatch" ? "text-sky-400" : "text-slate-600")} />
-                          <span className={cn("text-[11px] font-bold", timerMode === "stopwatch" ? "text-white" : "text-slate-600")}>Stopwatch</span>
-                        </button>
-                        <button 
-                          onClick={() => setTimerMode("timer")}
-                          className={cn(
-                            "flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all",
-                            timerMode === "timer" ? "bg-white/5 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.1)]" : "bg-transparent border-white/5 hover:bg-white/[0.02]"
-                          )}
-                        >
-                          <RotateCcw className={cn("h-7 w-7", timerMode === "timer" ? "text-amber-500" : "text-slate-600")} />
-                          <span className={cn("text-[11px] font-bold", timerMode === "timer" ? "text-white" : "text-slate-600")}>Timer</span>
-                        </button>
-                      </div>
-                      
-                      <Button 
-                        onClick={handleToggleTimer}
-                        className="w-full bg-white hover:bg-slate-200 text-black font-black h-11 rounded-xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-95"
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full right-0 mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 p-5"
+                  >
+                    <div className="grid grid-cols-2 gap-3 mb-5">
+                      <button 
+                        onClick={() => setTimerMode("stopwatch")}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all",
+                          timerMode === "stopwatch" ? "bg-white/5 border-sky-500/50 shadow-[0_0_20px_rgba(14,165,233,0.1)]" : "bg-transparent border-white/5 hover:bg-white/[0.02]"
+                        )}
                       >
-                        {isTimerRunning ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
-                        {isTimerRunning ? "Reset Stopwatch" : "Start Stopwatch"}
-                      </Button>
-                    </motion.div>
-                  </>
+                        <Clock className={cn("h-7 w-7", timerMode === "stopwatch" ? "text-sky-400" : "text-slate-600")} />
+                        <span className={cn("text-[11px] font-bold", timerMode === "stopwatch" ? "text-white" : "text-slate-600")}>Stopwatch</span>
+                      </button>
+                      <button 
+                        onClick={() => setTimerMode("timer")}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all",
+                          timerMode === "timer" ? "bg-white/5 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.1)]" : "bg-transparent border-white/5 hover:bg-white/[0.02]"
+                        )}
+                      >
+                        <RotateCcw className={cn("h-7 w-7", timerMode === "timer" ? "text-amber-500" : "text-slate-600")} />
+                        <span className={cn("text-[11px] font-bold", timerMode === "timer" ? "text-white" : "text-slate-600")}>Timer</span>
+                      </button>
+                    </div>
+                    
+                    <Button 
+                      onClick={handleToggleTimer}
+                      className="w-full bg-white hover:bg-slate-200 text-black font-black h-11 rounded-xl flex items-center justify-center gap-2 text-xs transition-transform active:scale-95"
+                    >
+                      {isTimerRunning ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
+                      {isTimerRunning ? "Reset Stopwatch" : "Start Stopwatch"}
+                    </Button>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
@@ -709,33 +741,31 @@ export default function ArenaProblemPage() {
                 </Button>
               </Hint>
 
+              {activePopover === "collaboration" && <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)} />}
               <AnimatePresence>
                 {activePopover === "collaboration" && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)} />
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-2 w-80 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 p-7"
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full right-0 mt-2 w-80 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 p-7"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        Collaboration <span className="px-1.5 py-0.5 rounded bg-white/5 text-[9px] text-slate-500 font-bold border border-white/10">Beta</span>
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                      Invite collaborators to code together on this problem! The collaboration can last up to 3 hours.
+                    </p>
+                    <Button 
+                      onClick={handleShare}
+                      className="w-full mt-8 bg-white hover:bg-slate-200 text-black font-black h-11 rounded-xl flex items-center justify-center gap-3 text-xs transition-transform active:scale-95"
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                          Collaboration <span className="px-1.5 py-0.5 rounded bg-white/5 text-[9px] text-slate-500 font-bold border border-white/10">Beta</span>
-                        </h3>
-                      </div>
-                      <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                        Invite collaborators to code together on this problem! The collaboration can last up to 3 hours.
-                      </p>
-                      <Button 
-                        onClick={handleShare}
-                        className="w-full mt-8 bg-white hover:bg-slate-200 text-black font-black h-11 rounded-xl flex items-center justify-center gap-3 text-xs transition-transform active:scale-95"
-                      >
-                        <Link2 className="h-4 w-4" />
-                        Create Link
-                      </Button>
-                    </motion.div>
-                  </>
+                      <Link2 className="h-4 w-4" />
+                      Create Link
+                    </Button>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
@@ -1071,38 +1101,36 @@ export default function ArenaProblemPage() {
                    </div>
                  </Hint>
 
+                 {activePopover === "language" && <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)} />}
                  <AnimatePresence>
                    {activePopover === "language" && (
-                     <>
-                       <div className="fixed inset-0 z-40" onClick={() => setActivePopover(null)} />
-                       <motion.div 
-                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                         className="absolute top-full left-0 mt-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 p-2"
-                       >
-                         {[
-                           { id: "sql", name: "SQL", icon: Database },
-                           { id: "python", name: "Python", icon: Code2 },
-                           { id: "r", name: "R Language", icon: Terminal },
-                         ].map((lang) => (
-                           <button
-                             key={lang.id}
-                             onClick={() => {
-                               setSelectedLanguage(lang.id);
-                               setActivePopover(null);
-                             }}
-                             className={cn(
-                               "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-colors",
-                               selectedLanguage === lang.id ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
-                             )}
-                           >
-                             <lang.icon className={cn("h-3.5 w-3.5", selectedLanguage === lang.id ? "text-indigo-400" : "text-slate-600")} />
-                             {lang.name}
-                           </button>
-                         ))}
-                       </motion.div>
-                     </>
+                     <motion.div 
+                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                       animate={{ opacity: 1, y: 0, scale: 1 }}
+                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                       className="absolute top-full left-0 mt-2 w-48 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 p-2"
+                     >
+                       {[
+                         { id: "sql", name: "SQL", icon: Database },
+                         { id: "python", name: "Python", icon: Code2 },
+                         { id: "r", name: "R Language", icon: Terminal },
+                       ].map((lang) => (
+                         <button
+                           key={lang.id}
+                           onClick={() => {
+                             setSelectedLanguage(lang.id);
+                             setActivePopover(null);
+                           }}
+                           className={cn(
+                             "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-colors",
+                             selectedLanguage === lang.id ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                           )}
+                         >
+                           <lang.icon className={cn("h-3.5 w-3.5", selectedLanguage === lang.id ? "text-indigo-400" : "text-slate-600")} />
+                           {lang.name}
+                         </button>
+                       ))}
+                     </motion.div>
                    )}
                  </AnimatePresence>
                </div>
@@ -1220,6 +1248,44 @@ export default function ArenaProblemPage() {
                       </div>
                    </div>
                    {result && <ResultsTable result={result} />}
+
+                   {/* AI Code Review Panel */}
+                   {(reviewText || reviewLoading) && (
+                     <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 overflow-hidden">
+                       <button
+                         onClick={() => setReviewOpen(!reviewOpen)}
+                         className="w-full flex items-center justify-between px-4 py-3 hover:bg-indigo-500/10 transition-colors"
+                       >
+                         <div className="flex items-center gap-2">
+                           <Bot className="h-4 w-4 text-indigo-400" />
+                           <span className="text-[11px] font-bold text-indigo-300">AI Code Review</span>
+                           {reviewLoading && <Loader2 className="h-3 w-3 animate-spin text-indigo-400" />}
+                         </div>
+                         {reviewOpen ? (
+                           <ChevronUp className="h-3.5 w-3.5 text-indigo-400" />
+                         ) : (
+                           <ChevronDown className="h-3.5 w-3.5 text-indigo-400" />
+                         )}
+                       </button>
+                       <AnimatePresence>
+                         {reviewOpen && (
+                           <motion.div
+                             initial={{ height: 0, opacity: 0 }}
+                             animate={{ height: "auto", opacity: 1 }}
+                             exit={{ height: 0, opacity: 0 }}
+                             transition={{ duration: 0.2 }}
+                             className="overflow-hidden"
+                           >
+                             <div className="px-4 pb-4 border-t border-indigo-500/10">
+                               <pre className="whitespace-pre-wrap font-sans text-[11px] text-slate-300 leading-relaxed mt-3">
+                                 {reviewText || "Analyzing your code..."}
+                               </pre>
+                             </div>
+                           </motion.div>
+                         )}
+                       </AnimatePresence>
+                     </div>
+                   )}
                 </div>
               ) : result ? (
                 <div className="space-y-4">

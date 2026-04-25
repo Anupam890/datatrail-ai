@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getServiceSupabase } from "@/lib/supabase";
 import { z } from "zod";
+import { checkAndUnlockAchievements } from "@/app/api/achievements/route";
 
 const executeSchema = z.object({
   problemId: z.string().uuid().optional(),
@@ -71,6 +72,16 @@ export async function POST(request: NextRequest) {
           p_xp_to_add: 100, // Fixed XP for now
         });
       }
+
+      // Update streak on any accepted submission (even re-solves count for daily activity)
+      await supabase.rpc("update_user_streak", {
+        p_user_id: userId,
+      });
+
+      // Check and unlock achievements (runs async, non-blocking)
+      checkAndUnlockAchievements(userId).catch((err) =>
+        console.error("Achievement check error:", err)
+      );
     }
 
     return NextResponse.json({

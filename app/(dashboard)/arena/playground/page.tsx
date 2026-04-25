@@ -442,11 +442,9 @@ function PracticePhase() {
         }}
       >
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild className="h-8 gap-2 text-slate-400 hover:text-white transition-colors">
-            <Link href="/arena">
-              <List className="h-4 w-4" />
-              <span>Problem List</span>
-            </Link>
+          <Button variant="ghost" size="sm" render={<Link href="/arena" />} className="h-8 gap-2 text-slate-400 hover:text-white transition-colors">
+            <List className="h-4 w-4" />
+            <span>Problem List</span>
           </Button>
 
           <div className="flex items-center gap-1 ml-2">

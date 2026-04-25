@@ -103,35 +103,7 @@ export async function GET(
       .select("id, title, slug, difficulty, tags")
       .limit(50);
 
-    if (allProblems) {
-      const unsolved = allProblems.filter((p: any) => !solvedProblemIds.includes(p.id));
-      // Pick up to 3 random unsolved problems
-      const shuffled = unsolved.sort(() => 0.5 - Math.random());
-      recommendedProblems = shuffled.slice(0, 3).map((p: any) => ({
-        id: p.id,
-        title: p.title,
-        slug: p.slug,
-        difficulty: p.difficulty,
-      }));
-    }
-
-    // 8. Daily challenge — deterministic pick based on today's date
-    let dailyChallenge = null;
-    if (allProblems && allProblems.length > 0) {
-      const today = new Date();
-      const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
-      const idx = dayOfYear % allProblems.length;
-      const p = allProblems[idx];
-      dailyChallenge = {
-        id: p.id,
-        title: p.title,
-        slug: p.slug,
-        difficulty: p.difficulty,
-        description: p.tags?.length ? `Practice your ${p.tags.slice(0, 2).join(" & ")} skills` : "Sharpen your SQL skills",
-      };
-    }
-
-    // 9. Skill progress — compute from accepted submission problem tags
+    // Compute tag skill counts (needed by both recommendations and skills display)
     const tagCounts: Record<string, { solved: number; total: number }> = {};
     if (allProblems) {
       for (const prob of allProblems) {
@@ -153,6 +125,95 @@ export async function GET(
         }
       }
     }
+
+    if (allProblems) {
+      const unsolved = allProblems.filter((p: any) => !solvedProblemIds.includes(p.id));
+
+      if (unsolved.length > 0) {
+        try {
+          // Build skill profile string for AI
+          const skillProfile = Object.entries(tagCounts)
+            .map(([tag, { solved, total }]) => `${tag}: ${total > 0 ? Math.round((solved / total) * 100) : 0}%`)
+            .join(", ");
+
+          // Build recent submissions summary
+          const recentSubsSummary = recentSubmissions
+            .slice(0, 10)
+            .map((s: any) => `${s.problems?.title || "Unknown"} (${s.problems?.difficulty || "?"}) → ${s.status}`)
+            .join("; ");
+
+          // Build available problems list
+          const availableList = unsolved
+            .map((p: any) => `${p.id} | ${p.title} | ${p.difficulty} | ${(p.tags || []).join(",")}`)
+            .join("\n");
+
+          const aiRes = await fetch(new URL("/api/ai", request.url).toString(), {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              cookie: request.headers.get("cookie") || "",
+            },
+            body: JSON.stringify({
+              action: "recommend",
+              skills: skillProfile || "No data yet",
+              recentSubmissions: recentSubsSummary || "No submissions yet",
+              solvedCount: String(solvedProblemIds.length),
+              availableProblems: availableList,
+            }),
+          });
+
+          if (aiRes.ok) {
+            const aiData = await aiRes.json();
+            const parsed = JSON.parse(aiData.result);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const recommendedIds = parsed.map((r: any) => r.id);
+              const reasons = Object.fromEntries(parsed.map((r: any) => [r.id, r.reason]));
+              recommendedProblems = unsolved
+                .filter((p: any) => recommendedIds.includes(p.id))
+                .map((p: any) => ({
+                  id: p.id,
+                  title: p.title,
+                  slug: p.slug,
+                  difficulty: p.difficulty,
+                  reason: reasons[p.id] || undefined,
+                }));
+            }
+          }
+        } catch {
+          // AI recommendation failed — fall through to random fallback
+        }
+      }
+
+      // Fallback: random if AI returned nothing
+      if (recommendedProblems.length === 0) {
+        const unsolved = allProblems.filter((p: any) => !solvedProblemIds.includes(p.id));
+        const shuffled = unsolved.sort(() => 0.5 - Math.random());
+        recommendedProblems = shuffled.slice(0, 3).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          difficulty: p.difficulty,
+        }));
+      }
+    }
+
+    // 8. Daily challenge — deterministic pick based on today's date
+    let dailyChallenge = null;
+    if (allProblems && allProblems.length > 0) {
+      const today = new Date();
+      const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+      const idx = dayOfYear % allProblems.length;
+      const p = allProblems[idx];
+      dailyChallenge = {
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        difficulty: p.difficulty,
+        description: p.tags?.length ? `Practice your ${p.tags.slice(0, 2).join(" & ")} skills` : "Sharpen your SQL skills",
+      };
+    }
+
+    // 9. Skill progress — already computed above (tagCounts), just format
     const skills = Object.entries(tagCounts)
       .map(([name, { solved, total }]) => ({
         name,

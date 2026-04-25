@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +29,10 @@ import {
   Loader2,
   ArrowRight,
   Filter,
+  Bookmark,
+  Wand2,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
 interface Problem {
@@ -87,6 +90,28 @@ export default function ArenaPage() {
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("all");
   const [topic, setTopic] = useState("all");
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const generateProblem = useMutation({
+    mutationFn: async () => {
+      const difficulties = ["easy", "medium", "hard"];
+      const randomDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+      const res = await fetch("/api/problems/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ difficulty: randomDifficulty }),
+      });
+      if (!res.ok) throw new Error("Failed to generate");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["problems"] });
+      if (data.slug) {
+        router.push(`/arena/${data.slug}`);
+      }
+    },
+  });
 
   const { data: problems = [], isLoading } = useQuery<Problem[]>({
     queryKey: ["problems"],
@@ -94,6 +119,33 @@ export default function ArenaPage() {
       const res = await fetch("/api/problems");
       if (!res.ok) throw new Error("Failed to fetch problems");
       return res.json();
+    },
+  });
+
+  // Fetch user's bookmarks (returns array of { problem_id } objects)
+  const { data: bookmarks = [] } = useQuery<{ problem_id: string }[]>({
+    queryKey: ["bookmarks"],
+    queryFn: async () => {
+      const res = await fetch("/api/bookmarks");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const bookmarkedIds = new Set(bookmarks.map((b) => b.problem_id));
+
+  const toggleBookmark = useMutation({
+    mutationFn: async (problemId: string) => {
+      const res = await fetch("/api/bookmarks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problemId }),
+      });
+      if (!res.ok) throw new Error("Failed to toggle bookmark");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
     },
   });
 
@@ -169,6 +221,19 @@ export default function ArenaPage() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
+            <Button 
+              size="lg" 
+              onClick={() => generateProblem.mutate()}
+              disabled={generateProblem.isPending}
+              className="group relative gap-3 bg-indigo-600 text-white hover:bg-indigo-500 rounded-2xl h-14 px-8 font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {generateProblem.isPending ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Wand2 className="h-5 w-5" />
+              )}
+              {generateProblem.isPending ? "Generating..." : "AI Generate"}
+            </Button>
           </motion.div>
         </div>
 
@@ -305,11 +370,25 @@ export default function ArenaPage() {
                         </div>
                       </div>
 
-                      <div className="md:border-l border-white/5 md:pl-8 flex items-center justify-between md:justify-center">
-                        <div className="md:hidden flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Available</span>
-                        </div>
+                      <div className="md:border-l border-white/5 md:pl-8 flex items-center gap-4">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleBookmark.mutate(problem.id);
+                          }}
+                          className="h-10 w-10 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors"
+                          title={bookmarkedIds.has(problem.id) ? "Remove bookmark" : "Add bookmark"}
+                        >
+                          <Bookmark
+                            className={cn(
+                              "h-4 w-4 transition-colors",
+                              bookmarkedIds.has(problem.id)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-slate-600 hover:text-slate-400"
+                            )}
+                          />
+                        </button>
                         <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">
                           SOLVE NOW <ArrowRight className="h-3 w-3" />
                         </div>

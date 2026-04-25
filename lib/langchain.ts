@@ -144,6 +144,99 @@ Rules:
 - The table name in questions must be: {tableName}
 `);
 
+const reviewPrompt = PromptTemplate.fromTemplate(`
+You are an expert SQL code reviewer. Review the user's submitted SQL query for a practice problem.
+
+Problem: {problem}
+Table Schema: {schema}
+User's Query: {query}
+Submission Result: {status}
+Error (if any): {error}
+
+Provide a concise code review in markdown with these sections:
+## Verdict
+One sentence: did it pass or fail and why.
+
+## Code Quality
+- Is the query readable and well-structured?
+- Are there unnecessary clauses or redundant logic?
+
+## Efficiency
+- Could indexing, filtering order, or join strategy be improved?
+- Any potential performance concerns at scale?
+
+## Learning Tips
+- 1-2 specific suggestions for the student to improve their SQL skills based on this query.
+
+Keep the entire review under 200 words. Be encouraging but honest.
+`);
+
+const recommendPrompt = PromptTemplate.fromTemplate(`
+You are an adaptive learning engine for a SQL practice platform. Based on the student's performance data, recommend the 3 best problems for them to attempt next.
+
+Student Skill Profile (tag → percentage solved):
+{skills}
+
+Recent Submissions (last 10):
+{recentSubmissions}
+
+Total Problems Solved: {solvedCount}
+
+Available Unsolved Problems (id, title, difficulty, tags):
+{availableProblems}
+
+Select exactly 3 problem IDs from the available list. Prioritize:
+1. Topics where the student is weakest (lowest skill percentage)
+2. Appropriate difficulty — if recent submissions show many failures, suggest easier problems; if mostly passing, push harder
+3. Variety — don't recommend 3 problems with the same tag
+
+Respond in this EXACT JSON format (no markdown, no code fences, just raw JSON):
+[
+  {{
+    "id": "problem-uuid",
+    "reason": "Brief reason for recommending this problem (under 15 words)"
+  }}
+]
+`);
+
+const generateProblemPrompt = PromptTemplate.fromTemplate(`
+You are an expert SQL problem designer for a learning platform. Generate a new SQL practice problem.
+
+Desired difficulty: {difficulty}
+Desired topics/tags: {tags}
+
+Example schemas from existing problems (for reference style):
+{existingSchemas}
+
+Create a complete problem with realistic data. Respond in this EXACT JSON format (no markdown, no code fences, just raw JSON):
+{{
+  "title": "Problem title (concise, descriptive)",
+  "description": "Full problem description in markdown. Describe what the student needs to query, include context about the data.",
+  "difficulty": "{difficulty}",
+  "tags": ["tag1", "tag2"],
+  "schema_json": {{
+    "table_name": "column1 TYPE, column2 TYPE, ..."
+  }},
+  "sample_data_json": {{
+    "table_name": [
+      {{"column1": "value1", "column2": "value2"}},
+      {{"column1": "value3", "column2": "value4"}}
+    ]
+  }},
+  "expected_output_json": [
+    {{"column1": "result1", "column2": "result2"}}
+  ],
+  "solution_query": "SELECT ... FROM ... WHERE ..."
+}}
+
+Rules:
+- Use PostgreSQL syntax and types (TEXT, INTEGER, NUMERIC, DATE, TIMESTAMP, BOOLEAN)
+- Include 5-10 rows of sample data per table
+- The expected_output_json must be the exact result of running solution_query against the sample data
+- Make the problem educational and progressively challenging for the chosen difficulty
+- Easy: single table, basic WHERE/ORDER BY. Medium: JOINs, GROUP BY, HAVING. Hard: subqueries, window functions, CTEs.
+`)
+
 export const explainChain = explainPrompt.pipe(model).pipe(outputParser);
 export const debugChain = debugPrompt.pipe(model).pipe(outputParser);
 export const hintChain = hintPrompt.pipe(model).pipe(outputParser);
@@ -152,3 +245,6 @@ export const optimizeChain = optimizePrompt.pipe(model).pipe(outputParser);
 export const nl2sqlChain = nl2sqlPrompt.pipe(model).pipe(outputParser);
 export const analyzeDataChain = analyzeDataPrompt.pipe(model).pipe(outputParser);
 export const generateQuestionsChain = generateQuestionsPrompt.pipe(model).pipe(outputParser);
+export const reviewChain = reviewPrompt.pipe(model).pipe(outputParser);
+export const recommendChain = recommendPrompt.pipe(model).pipe(outputParser);
+export const generateProblemChain = generateProblemPrompt.pipe(model).pipe(outputParser);

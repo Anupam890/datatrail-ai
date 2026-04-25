@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Search, 
   Bell, 
@@ -13,13 +14,14 @@ import {
   LayoutDashboard,
   GraduationCap,
   Trophy,
-  MessageSquare
+  MessageSquare,
+  CheckCheck,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ProfileDropdown } from "./ProfileDropdown";
+import { CommandPalette } from "./CommandPalette";
 
 const navItems = [
   { href: "/arena", label: "Arena", icon: LayoutDashboard },
@@ -30,8 +32,12 @@ const navItems = [
 
 export function TopNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const { data: session } = authClient.useSession();
 
   useEffect(() => {
@@ -39,6 +45,57 @@ export function TopNavbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Fetch notifications
+  const { data: notifData } = useQuery<{
+    notifications: Array<{
+      id: string;
+      type: string;
+      title: string;
+      message: string | null;
+      link: string | null;
+      is_read: boolean;
+      created_at: string;
+    }>;
+    unreadCount: number;
+  }>({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      const res = await fetch("/api/notifications?limit=10");
+      if (!res.ok) return { notifications: [], unreadCount: 0 };
+      return res.json();
+    },
+    enabled: !!session?.user,
+    refetchInterval: 30000, // poll every 30s
+  });
+
+  const unreadCount = notifData?.unreadCount ?? 0;
+  const notifications = notifData?.notifications ?? [];
+
+  // Mark all as read
+  const markAllRead = useMutation({
+    mutationFn: async () => {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ markAll: true }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
 
   return (
     <header 
@@ -91,18 +148,98 @@ export function TopNavbar() {
         {/* Right: Actions */}
         <div className="flex items-center gap-2 lg:gap-3">
           
-          {/* Search - Desktop */}
-          <div className="hidden lg:flex relative w-48 xl:w-56 group">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
-            <Input 
-              placeholder="Search..." 
-              className="h-8 w-full bg-slate-900/50 border-slate-800 pl-9 text-xs focus:ring-indigo-500/20 focus:border-indigo-500/50 rounded-xl transition-all"
-            />
-          </div>
+          {/* Search - Desktop (opens command palette) */}
+          <button
+            onClick={() => document.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="hidden lg:flex items-center gap-2 h-8 w-48 xl:w-56 bg-slate-900/50 border border-slate-800 rounded-xl px-3 text-xs text-slate-500 hover:border-slate-700 hover:text-slate-400 transition-all"
+          >
+            <Search className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1 text-left">Search...</span>
+            <kbd className="inline-flex h-5 items-center rounded border border-slate-700 bg-slate-800 px-1.5 text-[10px] font-mono text-slate-600">
+              CtrlK
+            </kbd>
+          </button>
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg shrink-0">
-            <Bell className="h-4 w-4" />
-          </Button>
+          {/* Notification Bell */}
+          <div className="relative" ref={notifRef}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg shrink-0 relative"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 flex items-center justify-center rounded-full bg-indigo-600 text-[9px] font-black text-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-80 bg-[#0f1420] border border-slate-800 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                >
+                  <div className="flex items-center justify-between p-4 border-b border-slate-800/50">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      Notifications
+                    </span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={() => markAllRead.mutate()}
+                        className="flex items-center gap-1 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider"
+                      >
+                        <CheckCheck className="h-3 w-3" /> Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-slate-600 text-sm font-medium">
+                        No notifications yet
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <button
+                          key={notif.id}
+                          onClick={() => {
+                            setShowNotifications(false);
+                            if (notif.link) router.push(notif.link);
+                          }}
+                          className={cn(
+                            "w-full text-left p-4 border-b border-slate-800/30 hover:bg-slate-800/30 transition-colors",
+                            !notif.is_read && "bg-indigo-500/5"
+                          )}
+                        >
+                          <div className="flex items-start gap-3">
+                            {!notif.is_read && (
+                              <div className="mt-1.5 h-2 w-2 rounded-full bg-indigo-500 shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-white truncate">
+                                {notif.title}
+                              </p>
+                              {notif.message && (
+                                <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                                  {notif.message}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Profile Dropdown */}
           <ProfileDropdown />
@@ -152,6 +289,9 @@ export function TopNavbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Command Palette Search */}
+      <CommandPalette />
     </header>
   );
 }
