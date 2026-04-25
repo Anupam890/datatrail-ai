@@ -9,8 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, Database } from "lucide-react";
+import { AlertCircle, Database, Equal, ListFilter } from "lucide-react";
 import type { QueryResult } from "@/types";
+import { cn } from "@/lib/utils";
 
 export function ResultsTable({ result }: { result: QueryResult }) {
   if (result.error) {
@@ -25,6 +26,72 @@ export function ResultsTable({ result }: { result: QueryResult }) {
     );
   }
 
+  const hasExpected = result.expected && result.expected.length > 0;
+  
+  // If we have expected data and it's NOT a sandbox query (where expected might be null)
+  // We can show a side-by-side or a "Mismatch" indicator if they differ
+  
+  const renderTable = (rows: Record<string, any>[], columns: string[], title?: string, isExpected?: boolean) => (
+    <div className="space-y-2">
+      {title && (
+        <div className="flex items-center gap-2 px-1">
+          <ListFilter className={cn("h-3 w-3", isExpected ? "text-emerald-400" : "text-indigo-400")} />
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{title}</span>
+        </div>
+      )}
+      <ScrollArea className={cn(
+        "rounded-md border max-h-[300px]",
+        isExpected ? "border-emerald-500/10 bg-emerald-500/[0.01]" : "border-slate-800 bg-slate-900/20"
+      )}>
+        <Table>
+          <TableHeader className="bg-slate-900/60 sticky top-0 z-10 backdrop-blur-md">
+            <TableRow className="border-slate-800 hover:bg-transparent">
+              {columns.map((col) => (
+                <TableHead key={col} className="font-mono text-[10px] font-bold uppercase tracking-tight text-slate-500 h-9 whitespace-nowrap">
+                  {col}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center py-8 text-slate-600 text-[10px]">
+                  No Rows Returned
+                </TableCell>
+              </TableRow>
+            ) : (
+              rows.map((row, idx) => (
+                <TableRow key={idx} className="border-slate-800/40 hover:bg-slate-800/30 transition-colors group">
+                  {columns.map((col) => (
+                    <TableCell key={col} className="font-mono text-xs py-2 whitespace-nowrap text-slate-300 group-hover:text-white transition-colors">
+                      {row[col] === null ? (
+                        <span className="text-slate-600 italic">NULL</span>
+                      ) : (
+                        String(row[col])
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </ScrollArea>
+    </div>
+  );
+
+  if (hasExpected) {
+    const expectedColumns = result.expected && result.expected.length > 0 ? Object.keys(result.expected[0]) : [];
+    
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
+        {renderTable(result.rows, result.columns, "Your Output")}
+        {renderTable(result.expected!, expectedColumns, "Expected Output", true)}
+      </div>
+    );
+  }
+
   if (result.rows.length === 0) {
     return (
       <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-12 text-center">
@@ -34,36 +101,5 @@ export function ResultsTable({ result }: { result: QueryResult }) {
     );
   }
 
-  return (
-    <div className="w-full">
-      <ScrollArea className="rounded-md border border-slate-800 bg-slate-900/20 max-h-[400px]">
-        <Table>
-          <TableHeader className="bg-slate-900/60 sticky top-0 z-10 backdrop-blur-md">
-            <TableRow className="border-slate-800 hover:bg-transparent">
-              {result.columns.map((col) => (
-                <TableHead key={col} className="font-mono text-[10px] font-bold uppercase tracking-tight text-slate-500 h-9 whitespace-nowrap">
-                  {col}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {result.rows.map((row, idx) => (
-              <TableRow key={idx} className="border-slate-800/40 hover:bg-slate-800/30 transition-colors group">
-                {result.columns.map((col) => (
-                  <TableCell key={col} className="font-mono text-xs py-2 whitespace-nowrap text-slate-300 group-hover:text-white transition-colors">
-                    {row[col] === null ? (
-                      <span className="text-slate-600 italic">NULL</span>
-                    ) : (
-                      String(row[col])
-                    )}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
-    </div>
-  );
+  return renderTable(result.rows, result.columns);
 }

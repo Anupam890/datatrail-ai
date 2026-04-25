@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: rpcError.message }, { status: 500 });
     }
 
-    const { success, result, execution_time, status, error: execError } = data;
+    const { success, result, expected, execution_time, status, error: execError } = data;
 
     // 2. Log the submission
     const { error: submissionError } = await supabase
@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success,
       result,
+      expected,
       executionTime: execution_time,
       status,
       error: execError,

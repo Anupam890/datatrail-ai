@@ -9,9 +9,24 @@ interface SQLEditorProps {
   onChange: (value: string) => void;
   onRun?: () => void;
   height?: string;
+  language?: string;
+  fontSize?: number;
+  tabSize?: number;
+  lineNumbers?: "on" | "off";
+  wordWrap?: "on" | "off";
 }
 
-export function SQLEditor({ value, onChange, onRun, height = "300px" }: SQLEditorProps) {
+export function SQLEditor({ 
+  value, 
+  onChange, 
+  onRun, 
+  height = "300px", 
+  language = "sql",
+  fontSize = 14,
+  tabSize = 2,
+  lineNumbers = "on",
+  wordWrap = "on"
+}: SQLEditorProps) {
   const { theme } = useTheme();
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
 
@@ -28,10 +43,10 @@ export function SQLEditor({ value, onChange, onRun, height = "300px" }: SQLEdito
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <Editor
         height={height}
-        language="sql"
+        language={language}
         theme="datatrail-dark"
         value={value}
         onChange={(val) => onChange(val || "")}
@@ -63,12 +78,12 @@ export function SQLEditor({ value, onChange, onRun, height = "300px" }: SQLEdito
         }}
         options={{
           minimap: { enabled: false },
-          fontSize: 14,
+          fontSize: fontSize,
           fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-          lineNumbers: "on",
+          lineNumbers: lineNumbers,
           renderLineHighlight: "all",
-          tabSize: 2,
-          wordWrap: "on",
+          tabSize: tabSize,
+          wordWrap: wordWrap,
           automaticLayout: true,
           scrollBeyondLastLine: false,
           padding: { top: 16, bottom: 16 },

@@ -48,6 +48,8 @@ export interface PlaygroundState {
   setIsGeneratingQuestions: (loading: boolean) => void;
   setAiHelp: (help: string) => void;
   setIsAiHelpLoading: (loading: boolean) => void;
+  generateQuestions: () => Promise<void>;
+  getAiHelp: (question: Question, analysis: DataAnalysis | null) => Promise<void>;
   resetSession: () => void;
 }
 
@@ -85,6 +87,61 @@ export const usePlaygroundStore = create<PlaygroundState>((set) => ({
   setIsGeneratingQuestions: (isGeneratingQuestions) => set({ isGeneratingQuestions }),
   setAiHelp: (aiHelp) => set({ aiHelp }),
   setIsAiHelpLoading: (isAiHelpLoading) => set({ isAiHelpLoading }),
+
+  generateQuestions: async () => {
+    const state = usePlaygroundStore.getState();
+    if (!state.analysis || state.isGeneratingQuestions) return;
+
+    set({ isGeneratingQuestions: true });
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generate_questions",
+          tableName: state.tableName,
+          summary: state.analysis.summary,
+          schema: JSON.stringify(state.analysis.columns),
+        }),
+      });
+      const data = await res.json();
+      if (data.result) {
+        const cleaned = data.result
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed)) {
+          set({ questions: parsed, activeQuestion: parsed[0] });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to generate questions:", err);
+    } finally {
+      set({ isGeneratingQuestions: false });
+    }
+  },
+
+  getAiHelp: async (question, analysis) => {
+    set({ isAiHelpLoading: true });
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "tutor_playground",
+          question,
+          analysis,
+        }),
+      });
+      const data = await res.json();
+      set({ aiHelp: data.result || "No advice available." });
+    } catch (err) {
+      console.error("AI Help error:", err);
+    } finally {
+      set({ isAiHelpLoading: false });
+    }
+  },
 
   resetSession: () => set(initialState),
 }));

@@ -53,8 +53,21 @@ export async function POST(request: NextRequest) {
         chain = generateQuestionsChain;
         input = { tableName: tableName || "data", schema: schema || "", summary: summary || "", sampleRows: sampleRows || "" };
         break;
+      case "tutor_playground":
+        chain = explainChain; // Use explainChain for general tutoring
+        input = { query: `Problem: ${JSON.stringify(body.question)}\nContext: ${JSON.stringify(body.analysis)}` };
+        break;
       default:
         return new Response(JSON.stringify({ error: "Invalid action" }), { status: 400 });
+    }
+
+    const isJsonAction = ["analyze_csv", "generate_questions"].includes(action);
+
+    if (isJsonAction) {
+      const result = await chain.invoke(input);
+      return new Response(JSON.stringify({ result }), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const stream = await chain.stream(input);

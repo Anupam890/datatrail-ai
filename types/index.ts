@@ -69,5 +69,6 @@ export interface QueryResult {
   columns: string[];
   rows: Record<string, unknown>[];
   executionTimeMs: number;
+  expected?: Record<string, unknown>[];
   error?: string;
 }

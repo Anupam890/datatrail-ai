@@ -52,10 +52,20 @@ import {
   User,
   Trophy,
   Command,
-  Monitor
+  Monitor,
+  AlignLeft,
+  Bookmark,
+  Braces,
+  Lock,
+  ChevronRight,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useSupabaseRealtime } from "@/hooks/use-realtime";
+import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@/lib/auth-client";
+import { colors } from "@/lib/colors";
 
 const SQLEditor = dynamic(
   () => import("@/components/editor/sql-editor").then((m) => m.SQLEditor),
@@ -67,16 +77,16 @@ const SQLEditor = dynamic(
   }
 );
 
-const difficultyColor: Record<string, string> = {
-  easy: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  medium: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  hard: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+const difficultyColor = {
+  easy: `bg-[${colors.success.background}] text-[${colors.success.text}] border-[${colors.success.border}]`,
+  medium: `bg-[${colors.warning.background}] text-[${colors.warning.text}] border-[${colors.warning.border}]`,
+  hard: `bg-[${colors.danger.background}] text-[${colors.danger.text}] border-[${colors.danger.border}]`,
 };
 
-const difficultyDot: Record<string, string> = {
-  easy: "bg-emerald-500",
-  medium: "bg-amber-500",
-  hard: "bg-rose-500",
+const difficultyDot = {
+  easy: `bg-[${colors.success.dot}]`,
+  medium: `bg-[${colors.warning.dot}]`,
+  hard: `bg-[${colors.danger.dot}]`,
 };
 
 // ---------------------------------------------------------------------------
@@ -296,6 +306,25 @@ function PracticePhase() {
     fileName,
   } = usePlaygroundStore();
 
+  const { data: session } = useSession();
+  const { onlineCount } = useSupabaseRealtime({
+    problemId: undefined,
+    problemSlug: "playground",
+    userId: session?.user?.id,
+    userName: session?.user?.name,
+  });
+
+  // Fetch User Profile (for streak)
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await fetch(`/api/user/profile`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!session?.user,
+  });
+
   const [code, setCode] = useState("-- Write your SQL vector here\nSELECT * FROM data LIMIT 10;");
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -348,6 +377,7 @@ function PracticePhase() {
     }
   }, [activeQuestion, tableName]);
 
+
   const handleRun = useCallback(() => {
     if (!dbRef.current) return;
     setIsExecuting(true);
@@ -377,30 +407,47 @@ function PracticePhase() {
 
   const handleSubmit = () => {
     if (!queryResult) return toast.error("Execute query first.");
-    toast.success("VALIDATING_RESULT...");
-    setTimeout(() => toast.success("MATRIX_SYNCHRONIZED: Challenge Complete."), 1000);
+    toast.success("Submitting solution...");
+    setTimeout(() => toast.success("Success: Challenge Complete."), 1000);
   };
 
   const handleGetHelp = () => {
     if (activeQuestion) getAiHelp(activeQuestion, analysis);
   };
 
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleSubmit();
+        } else {
+          handleRun();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleRun, handleSubmit]);
+
   return (
-    <div className="flex flex-col h-screen bg-[#0A0A0A] overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: colors.background.main }}>
       {/* ─── Header ─── */}
-      <header className="h-12 border-b border-white/5 bg-[#141414] flex items-center justify-between px-4 shrink-0">
+      <header 
+        className="h-12 border-b flex items-center justify-between px-4 shrink-0"
+        style={{ 
+          backgroundColor: colors.background.active,
+          borderColor: colors.border.subtle
+        }}
+      >
         <div className="flex items-center gap-4">
-          <Link href="/arena" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center">
-               <Database className="h-4 w-4 text-white" />
-            </div>
-          </Link>
-          <div className="h-4 w-px bg-white/10 mx-1" />
-          
-          <button className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors">
-            <List className="h-4 w-4" />
-            <span>Problem List</span>
-          </button>
+          <Button variant="ghost" size="sm" asChild className="h-8 gap-2 text-slate-400 hover:text-white transition-colors">
+            <Link href="/arena">
+              <List className="h-4 w-4" />
+              <span>Problem List</span>
+            </Link>
+          </Button>
 
           <div className="flex items-center gap-1 ml-2">
             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white/5 text-slate-500">
@@ -439,7 +486,7 @@ function PracticePhase() {
               </Button>
           </div>
           
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:bg-indigo-500/10">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-400 hover:bg-indigo-500/10" onClick={generateQuestions}>
             <Sparkles className="h-4 w-4" />
           </Button>
         </div>
@@ -447,8 +494,8 @@ function PracticePhase() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-4 mr-4">
             <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 cursor-pointer">
-               <Flame className="h-4 w-4" />
-               <span className="text-xs font-bold">0</span>
+               <Flame className="h-4 w-4 text-amber-500" />
+               <span className="text-xs font-bold">{profile?.streak || 0}</span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 cursor-pointer">
                <Clock className="h-4 w-4" />
@@ -456,12 +503,13 @@ function PracticePhase() {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="h-8 gap-2 text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+              <Users className="h-4 w-4" />
+              <span className="text-xs font-medium">Collaborate</span>
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
               <Settings className="h-4 w-4" />
             </Button>
-            <div className="h-8 w-8 rounded-full bg-indigo-600/20 border border-indigo-500/20 flex items-center justify-center">
-              <User className="h-4 w-4 text-indigo-400" />
-            </div>
             <Button size="sm" className="h-7 bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 text-[10px] font-black uppercase tracking-tight">
               Premium
             </Button>
@@ -472,8 +520,20 @@ function PracticePhase() {
       {/* ─── Main ─── */}
       <main className="flex-1 flex overflow-hidden">
         {/* Left */}
-        <div className="w-[45%] flex flex-col border-r border-white/5 bg-[#0F0F0F] relative">
-          <div className="h-9 border-b border-white/5 flex items-center px-2 bg-[#1A1A1A] shrink-0">
+        <div 
+          className="w-[45%] flex flex-col border-r relative"
+          style={{ 
+            backgroundColor: colors.background.subtle,
+            borderColor: colors.border.muted
+          }}
+        >
+          <div 
+            className="h-9 border-b flex items-center px-2 shrink-0"
+            style={{ 
+              backgroundColor: colors.background.active,
+              borderColor: colors.border.subtle
+            }}
+          >
             {[
               { id: "description", label: "Description", icon: FileSpreadsheet },
               { id: "solutions", label: "Solutions", icon: Lightbulb },
@@ -489,7 +549,7 @@ function PracticePhase() {
               >
                 <tab.icon className={cn("h-3 w-3", activeTab === tab.id ? "text-indigo-400" : "text-slate-600")} />
                 {tab.label}
-                {activeTab === tab.id && <motion.div layoutId="arenaTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />}
+                {activeTab === tab.id && <motion.div layoutId="playgroundTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />}
               </button>
             ))}
           </div>
@@ -658,29 +718,47 @@ function PracticePhase() {
         </div>
 
         {/* Right */}
-        <div className="flex-1 flex flex-col bg-[#050505]">
-          {/* Editor Header */}
-          <div className="h-9 border-b border-white/5 flex items-center justify-between px-4 bg-[#1A1A1A] shrink-0">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-400">
-              <Code2 className="h-3.5 w-3.5" />
+        <div className="flex-1 flex flex-col" style={{ backgroundColor: colors.background.main }}>
+          {/* 1. Editor Header - Label Bar */}
+          <div 
+            className="h-9 border-b flex items-center px-4 shrink-0"
+            style={{ 
+              backgroundColor: colors.background.active,
+              borderColor: colors.border.subtle
+            }}
+          >
+            <div className="flex items-center gap-2 text-[11px] font-bold text-white">
+              <Code2 className="h-4 w-4 text-emerald-400" />
               <span>Code</span>
             </div>
+          </div>
+
+          {/* 2. Editor Header - Controls Bar */}
+          <div 
+            className="h-9 border-b flex items-center justify-between px-4 shrink-0"
+            style={{ 
+              backgroundColor: colors.background.active,
+              borderColor: colors.border.subtle
+            }}
+          >
             <div className="flex items-center gap-4">
-               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold hover:text-white cursor-pointer">
+               <div className="flex items-center gap-1.5 text-[11px] text-slate-300 font-medium hover:text-white cursor-pointer group">
                   <span>SQL</span>
-                  <ChevronDown className="h-3 w-3" />
-               </div>
-               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold hover:text-white cursor-pointer">
-                  <Clock className="h-3 w-3" />
-                  <span>Auto</span>
+                  <ChevronDown className="h-3 w-3 text-slate-500 group-hover:text-white" />
                </div>
                <div className="h-4 w-px bg-white/10" />
-               <div className="flex items-center gap-3 text-slate-500">
-                  <Settings className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
-                  <Copy className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
-                  <RotateCcw className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
-                  <Maximize2 className="h-3.5 w-3.5 hover:text-white cursor-pointer" />
+               <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium hover:text-white cursor-pointer group">
+                  <Lock className="h-3 w-3 text-slate-500 group-hover:text-white" />
+                  <span>Auto</span>
                </div>
+            </div>
+            
+            <div className="flex items-center gap-4 text-slate-400">
+               <AlignLeft className="h-3.5 w-3.5 hover:text-white cursor-pointer transition-colors" />
+               <Bookmark className="h-3.5 w-3.5 hover:text-white cursor-pointer transition-colors" />
+               <Braces className="h-3.5 w-3.5 hover:text-white cursor-pointer transition-colors" />
+               <RotateCcw className="h-3.5 w-3.5 hover:text-white cursor-pointer transition-colors" />
+               <Maximize2 className="h-3.5 w-3.5 hover:text-white cursor-pointer transition-colors" />
             </div>
           </div>
 
@@ -688,15 +766,33 @@ function PracticePhase() {
              <SQLEditor value={code} onChange={setCode} onRun={handleRun} height="100%" />
              
              {/* Editor Bottom Bar */}
-             <div className="absolute bottom-0 left-0 right-0 h-6 bg-[#0A0A0A] border-t border-white/5 flex items-center justify-between px-3 z-10">
-                <span className="text-[9px] font-medium text-slate-600">Saved</span>
-                <span className="text-[9px] font-medium text-slate-600">Ln 1, Col 1</span>
+             <div 
+                className="absolute bottom-0 left-0 right-0 h-7 border-t flex items-center justify-between px-4 z-10"
+                style={{ 
+                  backgroundColor: colors.background.active,
+                  borderColor: colors.border.subtle
+                }}
+             >
+                <span className="text-[10px] font-medium text-slate-500">Saved</span>
+                <span className="text-[10px] font-medium text-slate-500">Ln 1, Col 1</span>
              </div>
           </div>
 
           {/* Console / Test Results */}
-          <div className="h-[30%] flex flex-col min-h-0 bg-[#0F0F0F] border-t border-white/10">
-            <div className="h-9 border-b border-white/5 flex items-center justify-between px-4 bg-[#1A1A1A]">
+          <div 
+            className="h-[35%] flex flex-col min-h-0 border-t"
+            style={{ 
+              backgroundColor: colors.background.subtle,
+              borderColor: colors.border.muted
+            }}
+          >
+            <div 
+              className="h-9 border-b flex items-center justify-between px-4"
+              style={{ 
+                backgroundColor: colors.background.active,
+                borderColor: colors.border.subtle
+              }}
+            >
               <div className="flex items-center gap-6">
                 <button className="flex items-center gap-2 text-[10px] font-bold text-emerald-400 h-full border-b-2 border-emerald-500 px-1">
                    <CheckCircle2 className="h-3 w-3" />

@@ -17,7 +17,7 @@ export async function GET(
     const { data, error } = await supabase
       .from("problems")
       .select(
-        "id, title, slug, difficulty, description, schema_json, sample_data_json, tags, created_at"
+        "id, title, slug, difficulty, description, schema_json, sample_data_json, tags, created_at, likes_count, dislikes_count, solutions_count, comments_count"
       )
       .eq("slug", slug)
       .single();
