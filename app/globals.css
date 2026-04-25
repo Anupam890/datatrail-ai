@@ -112,6 +112,14 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-indigo-400 to-secondary;
   }
+
+  .bg-grain {
+    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+  }
+
+  .glass-premium {
+    @apply bg-[#111827]/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+  }
 }
 
 /* Animations */

@@ -2,6 +2,7 @@
 
 import { signIn } from "@/lib/auth-client";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -42,34 +43,38 @@ export default function OAuthButton() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <button
+    <div className="flex flex-col gap-4">
+      <motion.button
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
         type="button"
-        className="w-full h-12 rounded-xl border border-[#1F2937] bg-white/5 hover:bg-white/10 transition-all font-semibold text-sm flex items-center justify-center gap-3 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-14 rounded-2xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/10 transition-all font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
         onClick={() => handleSocialSignIn("google")}
         disabled={loadingProvider !== null}
       >
         {loadingProvider === "google" ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
-          <GoogleIcon className="w-5 h-5" />
+          <GoogleIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
         )}
         Continue with Google
-      </button>
+      </motion.button>
 
-      <button
+      <motion.button
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
         type="button"
-        className="w-full h-12 rounded-xl border border-[#1F2937] bg-white/5 hover:bg-white/10 transition-all font-semibold text-sm flex items-center justify-center gap-3 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-14 rounded-2xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/10 transition-all font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group"
         onClick={() => handleSocialSignIn("github")}
         disabled={loadingProvider !== null}
       >
         {loadingProvider === "github" ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
-          <GitHubIcon className="w-5 h-5" />
+          <GitHubIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
         )}
         Continue with GitHub
-      </button>
+      </motion.button>
     </div>
   );
 }

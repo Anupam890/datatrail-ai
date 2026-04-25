@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import AuthCard from "@/components/auth/AuthCard";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, CheckCircle2, Loader2 } from "lucide-react";
+import { ChevronRight, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -51,11 +51,11 @@ export default function ResetPasswordPage() {
   return (
     <AuthCard 
       title="Set New Password" 
-      subtitle={isSuccess ? "Password Reset Successful" : "Establish your new security access password"}
+      subtitle={isSuccess ? "Access Restored" : "Establish your new security access credentials"}
     >
       {!isSuccess ? (
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <PasswordInput
               label="New Password"
               value={formData.password}
@@ -73,37 +73,45 @@ export default function ResetPasswordPage() {
 
           <Button
             type="submit"
-            className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-white font-black text-lg transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] group overflow-hidden"
+            className="w-full h-16 rounded-[2rem] bg-primary text-white font-black text-lg transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] group relative overflow-hidden uppercase tracking-widest italic"
             disabled={isLoading}
           >
-            <span className="relative z-10 flex items-center justify-center gap-2">
+            <span className="relative z-10 flex items-center justify-center gap-3">
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Update Password
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Update Security Cipher
+                  <ShieldCheck className="w-6 h-6 group-hover:scale-110 transition-transform" />
                 </>
               )}
             </span>
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Button>
         </form>
       ) : (
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-8 py-4"
+          className="text-center space-y-10 py-6"
         >
-          <div className="p-6 rounded-3xl bg-secondary/10 border border-secondary/20 inline-block">
-            <CheckCircle2 className="w-12 h-12 text-secondary" />
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <div className="relative p-8 rounded-[2.5rem] bg-primary/10 border border-primary/20">
+              <CheckCircle2 className="w-16 h-16 text-primary" />
+            </div>
           </div>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Your security cipher has been updated. <br />
-            Node access is now fully restored.
-          </p>
-          <div className="pt-4">
+
+          <div className="space-y-4">
+            <p className="text-white/40 text-sm leading-relaxed uppercase tracking-widest font-bold">
+              Your security cipher has been updated <br />
+              Node access is now fully restored
+            </p>
+          </div>
+
+          <div className="pt-6">
              <Link href="/login">
-               <Button className="w-full h-14 rounded-xl bg-primary font-black uppercase tracking-wider">
+               <Button className="w-full h-16 rounded-[2rem] bg-primary text-white font-black text-lg transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest italic">
                  Access Console
                </Button>
              </Link>

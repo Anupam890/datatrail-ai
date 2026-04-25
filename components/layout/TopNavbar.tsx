@@ -57,7 +57,7 @@ export function TopNavbar() {
             <Database className="h-4.5 w-4.5 text-white" />
           </div>
           <span className="text-base font-black tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            SQLArena
+            DataTrail
           </span>
         </Link>
 

@@ -8,7 +8,7 @@ import PasswordInput from "@/components/auth/PasswordInput";
 import OAuthButton from "@/components/auth/OAuthButton";
 import AuthFooter from "@/components/auth/AuthFooter";
 import { Button } from "@/components/ui/button";
-import { Mail, User, ShieldCheck, ChevronRight, Loader2 } from "lucide-react";
+import { Mail, User, ChevronRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -29,7 +29,7 @@ export default function SignupPage() {
       return { label: "Weak", color: "bg-red-500", width: "33%" };
     if (pwd.length < 10)
       return { label: "Medium", color: "bg-yellow-500", width: "66%" };
-    return { label: "Strong", color: "bg-green-500", width: "100%" };
+    return { label: "Strong", color: "bg-emerald-500", width: "100%" };
   };
 
   const strength = getPasswordStrength(formData.password);
@@ -68,7 +68,7 @@ export default function SignupPage() {
   return (
     <AuthCard
       title="Create Account"
-      subtitle="Start your SQL learning journey today"
+      subtitle="Start your data engineering journey today"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <InputField
@@ -99,12 +99,12 @@ export default function SignupPage() {
           />
 
           {strength && (
-            <div className="px-1 space-y-1.5 animate-in fade-in slide-in-from-top-1 transition-all">
-              <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-[0.1em]">
-                <span className="text-muted-foreground/60 text-[8px]">
+            <div className="px-1 space-y-2 transition-all">
+              <div className="flex justify-between items-center">
+                <span className="text-[8px] font-black uppercase tracking-widest text-white/20">
                   Password Strength
                 </span>
-                <span className={strength.color.replace("bg-", "text-")}>
+                <span className={cn("text-[9px] font-black uppercase tracking-widest", strength.color.replace("bg-", "text-"))}>
                   {strength.label}
                 </span>
               </div>
@@ -138,7 +138,7 @@ export default function SignupPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-bold uppercase tracking-wider text-center"
+            className="p-4 rounded-2xl bg-destructive/5 border border-destructive/10 text-destructive text-[10px] font-black uppercase tracking-widest text-center mt-4"
           >
             {error}
           </motion.div>
@@ -146,16 +146,16 @@ export default function SignupPage() {
 
         <Button
           type="submit"
-          className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-white font-black text-lg transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden mt-4"
+          className="w-full h-16 rounded-[2rem] bg-primary text-white font-black text-lg transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden mt-6 uppercase tracking-widest italic"
           disabled={isLoading}
         >
-          <span className="relative z-10 flex items-center justify-center gap-2">
+          <span className="relative z-10 flex items-center justify-center gap-3">
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <>
-                Create Account
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                Initialize Account
+                <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </span>
@@ -163,22 +163,24 @@ export default function SignupPage() {
         </Button>
       </form>
 
-      <div className="relative my-8">
+      <div className="relative my-10">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#1F2937]" />
+          <div className="w-full border-t border-white/5" />
         </div>
-        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-          <span className="bg-[#111827] px-4 text-muted-foreground/60">Or continue with</span>
+        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]">
+          <span className="bg-[#0B0F19] px-6 text-white/20">Secured Access</span>
         </div>
       </div>
 
       <OAuthButton />
 
       <AuthFooter
-        text="Already have an account?"
-        linkText="Login"
+        text="Already an architect?"
+        linkText="Sign In"
         href="/login"
       />
     </AuthCard>
   );
 }
+
+import { cn } from "@/lib/utils";

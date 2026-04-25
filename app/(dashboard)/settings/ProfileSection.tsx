@@ -145,7 +145,7 @@ export function ProfileSection() {
     <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-10">
       <div>
         <h2 className="text-xl font-bold text-white">Public Profile</h2>
-        <p className="text-sm text-slate-500 mt-1">This information will be visible to other members of SQLArena.</p>
+        <p className="text-sm text-slate-500 mt-1">This information will be visible to other members of DataTrail.</p>
       </div>
 
       {/* Avatar Section */}

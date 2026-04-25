@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Database } from "lucide-react";
 
 interface AuthCardProps {
   children: React.ReactNode;
@@ -13,22 +12,28 @@ interface AuthCardProps {
 
 export default function AuthCard({ children, title, subtitle, className }: AuthCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+    <div
       className={cn(
-        "w-full bg-[#111827]/60 backdrop-blur-2xl border border-[#1F2937] rounded-[2rem] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden",
+        "w-full glass-dark border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] relative overflow-hidden group",
         className
       )}
     >
-      <div className="flex flex-col items-start mb-8">
-        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">{title}</h1>
-        {subtitle && <p className="text-muted-foreground text-sm font-medium">{subtitle}</p>}
-      </div>
+      {/* Decorative Glow */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[60px] group-hover:bg-primary/20 transition-all duration-700" />
+      
+      <div className="relative z-10">
+        <div className="flex flex-col items-start mb-10">
+          <h1 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight italic uppercase">{title}</h1>
+          {subtitle && (
+            <p className="text-white/40 text-sm font-medium leading-relaxed max-w-[280px]">
+              {subtitle}
+            </p>
+          )}
+        </div>
 
-      {children}
-    </motion.div>
+        {children}
+      </div>
+    </div>
   );
 }
 

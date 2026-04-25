@@ -1,4 +1,4 @@
--- SQLArena Database Schema
+-- DataTrail Database Schema
 
 -- 1. Tables
 

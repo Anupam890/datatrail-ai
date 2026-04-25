@@ -17,31 +17,33 @@ export default function InputField({ icon: Icon, error, label, className, value,
   const hasValue = value && value.toString().length > 0;
 
   return (
-    <div className="space-y-1 relative">
+    <div className="space-y-2 relative group">
       <div className={cn(
-        "relative rounded-xl border transition-all duration-300 group",
-        isFocused ? "border-primary ring-4 ring-primary/10 bg-primary/5" : "border-[#1F2937] bg-white/5",
-        error ? "border-destructive/50 ring-destructive/10" : ""
+        "relative rounded-2xl border transition-all duration-500 overflow-hidden",
+        isFocused 
+          ? "border-primary shadow-[0_0_20px_-5px_rgba(99,102,241,0.3)] bg-primary/5" 
+          : "border-white/5 bg-white/[0.03] hover:border-white/10 hover:bg-white/[0.05]",
+        error ? "border-destructive/50 shadow-[0_0_20px_-5px_rgba(239,68,68,0.2)]" : ""
       )}>
         <div className={cn(
-          "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300",
-          isFocused ? "text-primary" : "text-muted-foreground"
+          "absolute left-5 top-1/2 -translate-y-1/2 transition-all duration-500",
+          isFocused ? "text-primary scale-110" : "text-white/20"
         )}>
-          <Icon className="w-4 h-4" />
+          <Icon className="w-5 h-5" />
         </div>
         
-        <div className="relative pt-6 pb-2 px-12">
+        <div className="relative pt-7 pb-3 px-14">
            <label className={cn(
-             "absolute left-12 transition-all duration-300 pointer-events-none select-none",
+             "absolute left-14 transition-all duration-500 pointer-events-none select-none",
              (isFocused || hasValue) 
-               ? "top-2 text-[10px] uppercase font-bold tracking-widest text-primary" 
-               : "top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+               ? "top-2.5 text-[9px] uppercase font-black tracking-[0.2em] text-primary" 
+               : "top-1/2 -translate-y-1/2 text-sm font-medium text-white/30"
            )}>
              {label}
            </label>
            <Input
              className={cn(
-               "h-7 w-full p-0 border-0 bg-transparent focus-visible:ring-0 placeholder:opacity-0 transition-opacity text-base",
+               "h-6 w-full p-0 border-0 bg-transparent focus-visible:ring-0 placeholder:opacity-0 transition-all text-white font-medium selection:bg-primary/30",
                className
              )}
              onFocus={() => setIsFocused(true)}
@@ -58,8 +60,9 @@ export default function InputField({ icon: Icon, error, label, className, value,
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="text-[10px] font-bold text-destructive px-1 uppercase tracking-wider"
+            className="text-[10px] font-black text-destructive px-2 uppercase tracking-widest flex items-center gap-1.5"
           >
+            <span className="w-1 h-1 rounded-full bg-destructive animate-pulse" />
             {error}
           </motion.p>
         )}

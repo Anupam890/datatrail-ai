@@ -100,7 +100,7 @@ export function PreferencesSection() {
           Application Preferences
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          Customize how you interact with the SQLArena playground and interface.
+          Customize how you interact with the DataTrail playground and interface.
         </p>
       </div>
 

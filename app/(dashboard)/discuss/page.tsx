@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   MessageSquare, 
   TrendingUp, 
@@ -14,18 +14,24 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  Zap,
+  Globe,
+  ArrowRight,
+  Database,
+  Hash,
+  ChevronRight,
   Flame,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { CountUp } from "@/components/ui/count-up";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { cn } from "@/lib/utils";
 
 const discussions = [
   {
     id: 1,
-    title: "Optimizing Recursive CTEs for Large Hierarchies",
+    title: "OPTIMIZING RECURSIVE CTES FOR LARGE HIERARCHIES",
     author: "sql_ninja",
     avatar: "S",
     tags: ["Optimization", "PostgreSQL"],
@@ -34,10 +40,11 @@ const discussions = [
     time: "2h ago",
     solved: true,
     hot: true,
+    preview: "When dealing with adjacency lists of over 1M records, the default recursive strategy fails..."
   },
   {
     id: 2,
-    title: "How to handle NULLs in complex aggregations?",
+    title: "HOW TO HANDLE NULLS IN COMPLEX AGGREGATIONS?",
     author: "query_newbie",
     avatar: "Q",
     tags: ["Basics", "Aggregations"],
@@ -46,10 +53,11 @@ const discussions = [
     time: "4h ago",
     solved: false,
     hot: false,
+    preview: "I'm seeing inconsistent results when using COALESCE inside a SUM() partitioned by date..."
   },
   {
     id: 3,
-    title: "SQL vs NoSQL: When to choose which for analytics?",
+    title: "SQL VS NOSQL: WHEN TO CHOOSE WHICH FOR ANALYTICS?",
     author: "db_architect",
     avatar: "D",
     tags: ["Architecture", "Discussion"],
@@ -58,10 +66,11 @@ const discussions = [
     time: "1d ago",
     solved: false,
     hot: true,
+    preview: "Looking at the trade-offs between Snowflake's columnar storage and MongoDB's document model..."
   },
   {
     id: 4,
-    title: "Window Functions: RANK() vs DENSE_RANK()",
+    title: "WINDOW FUNCTIONS: RANK() VS DENSE_RANK()",
     author: "master_coder",
     avatar: "M",
     tags: ["Window Functions", "Tutorial"],
@@ -70,228 +79,256 @@ const discussions = [
     time: "2d ago",
     solved: true,
     hot: false,
-  },
+    preview: "A deep dive into how ties are handled across different SQL implementations and why it matters..."
+  }
 ];
 
 const categories = [
-  { name: "General", count: 1240 },
-  { name: "SQL Help", count: 850 },
-  { name: "Optimization", count: 420 },
-  { name: "Architecture", count: 180 },
-  { name: "Career", count: 310 },
+  { name: "PRODUCTION_SUPPORT", count: 1240, icon: ShieldCheckIcon },
+  { name: "QUERY_OPTIMIZATION", count: 850, icon: Zap },
+  { name: "SCHEMA_DESIGN", count: 420, icon: Database },
+  { name: "ANALYTICS_PATTERNS", count: 180, icon: TrendingUp },
+  { name: "CAREER_NODES", count: 310, icon: Globe },
 ];
 
-export default function NexusPage() {
+function ShieldCheckIcon({ className }: { className?: string }) {
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white py-8 md:py-12 px-4 md:px-6">
-      {/* Background Decor */}
+    <svg 
+      className={className} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+export default function DiscussPage() {
+  return (
+    <div className="relative min-h-screen bg-[#0B0F19] text-white overflow-x-hidden">
+      {/* Dynamic Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[30%] h-[30%] bg-indigo-500/5 rounded-full blur-[120px]" />
-        <div className="absolute top-[50%] -right-[15%] w-[25%] h-[25%] bg-purple-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-5%] w-[45%] h-[45%] bg-indigo-600/10 rounded-full blur-[140px] animate-pulse" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[35%] h-[35%] bg-blue-600/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       </div>
 
-      <div className="relative max-w-[1400px] mx-auto space-y-10">
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 space-y-16">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="space-y-6">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 w-fit"
+              className="flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 w-fit"
             >
-              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Community Nexus</span>
+              <Sparkles className="h-4 w-4 text-indigo-400" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400">Collaborative Network</span>
             </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="text-4xl md:text-6xl font-black tracking-tighter leading-none italic"
-            >
-              THE NEXUS
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-slate-400 max-w-xl text-lg"
-            >
-              Engage with elite database engineers, share insights, and solve complex SQL challenges together.
-            </motion.p>
+            
+            <div className="space-y-2">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] italic uppercase"
+              >
+                THE <span className="text-indigo-500 drop-shadow-[0_0_30px_rgba(99,102,241,0.4)]">DISCUSS</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+                className="text-slate-400 max-w-xl text-lg md:text-xl font-medium tracking-tight"
+              >
+                Peer-to-peer knowledge nodes for complex database engineering and architectural problem solving.
+              </motion.p>
+            </div>
           </div>
+
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-4"
           >
-            <Button className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 h-12 rounded-2xl gap-2 shadow-lg shadow-indigo-500/20">
-              <Plus className="h-5 w-5" /> Start Discussion
+            <Button size="lg" className="bg-indigo-600 hover:bg-indigo-500 text-white font-black italic tracking-wider px-8 h-14 rounded-2xl gap-3 shadow-[0_0_30px_rgba(99,102,241,0.2)] transition-all hover:scale-105 active:scale-95">
+              <Plus className="h-5 w-5" />
+              INITIALIZE BROADCAST
             </Button>
           </motion.div>
         </div>
 
-        {/* Stats Row */}
-        <motion.div
+        {/* Search Hub */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          transition={{ delay: 0.3 }}
+          className="flex flex-col md:flex-row gap-4 p-2 glass-premium rounded-[2.5rem]"
         >
-          {[
-            { label: "Active Threads", value: 12400, suffix: "", icon: MessageSquare, color: "text-blue-500" },
-            { label: "Daily Queries", value: 842, suffix: "", icon: TrendingUp, color: "text-emerald-500" },
-            { label: "Contributors", value: 1200, suffix: "+", icon: Users, color: "text-purple-500" },
-          ].map((stat, i) => (
-            <Card key={i} className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-colors">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">{stat.label}</p>
-                  <p className="text-2xl md:text-3xl font-black italic tracking-tight">
-                    <CountUp to={stat.value} duration={1.5} />{stat.suffix}
-                  </p>
-                </div>
-                <stat.icon className={`h-7 w-7 ${stat.color} opacity-20`} />
-              </CardContent>
-            </Card>
-          ))}
-        </motion.div>
-
-        {/* Search and Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex flex-col sm:flex-row gap-3 items-center"
-        >
-          <div className="relative flex-1 w-full group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
-            <Input 
-              placeholder="Search discussions, tags, or users..." 
-              className="bg-slate-900/50 border-slate-800 h-12 pl-12 rounded-2xl focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+          <div className="relative flex-1 group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
+            <Input
+              placeholder="Search knowledge nodes by title, tags, or operator..."
+              className="bg-transparent border-none h-16 pl-16 pr-6 text-base font-medium focus:ring-0 placeholder:text-slate-600"
             />
           </div>
-          <Button variant="outline" className="border-slate-800 bg-slate-900/50 h-12 px-6 rounded-2xl gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4" /> Filter
-          </Button>
+          <div className="flex items-center gap-2 p-2">
+            <Button variant="ghost" className="h-12 px-6 rounded-2xl bg-white/5 border border-white/5 font-bold text-[10px] uppercase tracking-widest gap-2">
+              <Filter className="h-4 w-4" /> REFILTER
+            </Button>
+          </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Discussion List */}
-          <div className="lg:col-span-8 space-y-3">
-            {discussions.map((discussion, i) => (
-              <motion.div
-                key={discussion.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 + i * 0.06 }}
-              >
-                <Card className="bg-slate-900/30 border-slate-800/50 hover:bg-slate-900/60 hover:border-indigo-500/20 transition-all duration-300 group cursor-pointer">
-                  <CardContent className="p-5">
-                    <div className="flex gap-5">
-                      <div className="hidden sm:flex flex-col items-center gap-2 shrink-0">
-                        <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center font-bold text-base group-hover:border-indigo-500/30 transition-colors">
-                          {discussion.avatar}
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
-                          <ThumbsUp className="h-3 w-3" /> {discussion.likes}
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-3 min-w-0">
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-base md:text-lg font-bold group-hover:text-indigo-400 transition-colors leading-tight">
-                              {discussion.title}
-                            </h3>
-                            {discussion.hot && (
-                              <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[9px] gap-1 shrink-0">
-                                <Flame className="h-2.5 w-2.5" /> Hot
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                            <span className="font-bold text-slate-400">@{discussion.author}</span>
-                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {discussion.time}</span>
-                            {discussion.solved && (
-                              <span className="flex items-center gap-1 text-emerald-500 font-bold uppercase tracking-widest text-[9px]">
-                                <CheckCircle2 className="h-3 w-3" /> Solved
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {discussion.tags.map(tag => (
-                            <Badge key={tag} variant="secondary" className="bg-slate-800/50 text-slate-400 hover:text-white transition-colors border-none text-[10px]">
-                              {tag}
-                            </Badge>
-                          ))}
-                          <div className="ml-auto flex items-center gap-4 text-slate-500 shrink-0">
-                            <div className="flex items-center gap-1.5 text-xs">
-                              <MessageCircle className="h-3.5 w-3.5" /> {discussion.replies}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          {/* Main Feed */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                <Globe className="h-3 w-3" /> ACTIVE_TRANSMISSIONS
+              </h2>
+              <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                <span>NEWEST</span>
+                <span className="text-slate-700">|</span>
+                <span className="text-slate-700">TRENDING</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <AnimatePresence mode="popLayout">
+                {discussions.map((post, i) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + i * 0.05 }}
+                  >
+                    <SpotlightCard className="group !p-0 rounded-[2.5rem] bg-slate-900/40 border-white/5 hover:border-indigo-500/30 transition-all duration-500">
+                      <div className="p-8 space-y-6">
+                        <div className="flex items-start gap-6">
+                          <div className="hidden sm:flex flex-col items-center gap-3">
+                            <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-black italic text-xl group-hover:scale-110 transition-transform duration-500">
+                              {post.avatar}
                             </div>
-                            <div className="flex items-center gap-1.5 text-xs hover:text-slate-300 transition-colors">
-                              <Share2 className="h-3.5 w-3.5" />
+                            <div className="flex flex-col items-center gap-1">
+                              <ThumbsUp className="h-3.5 w-3.5 text-slate-600 group-hover:text-indigo-400 transition-colors" />
+                              <span className="text-[10px] font-black text-slate-500">{post.likes}</span>
                             </div>
                           </div>
+                          
+                          <div className="flex-1 space-y-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-3">
+                                <h3 className="text-2xl font-black italic tracking-tighter uppercase group-hover:text-indigo-400 transition-colors leading-[1.1]">
+                                  {post.title}
+                                </h3>
+                                {post.solved && (
+                                  <div className="shrink-0 h-6 w-6 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                                  </div>
+                                )}
+                                {post.hot && (
+                                  <Badge className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[9px] gap-1 shrink-0">
+                                    <Flame className="h-2.5 w-2.5" /> HOT
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-slate-500 text-sm font-medium leading-relaxed line-clamp-2">
+                                {post.preview}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-white/5">
+                              <div className="flex flex-wrap gap-2">
+                                {post.tags.map(tag => (
+                                  <Badge key={tag} variant="outline" className="rounded-lg bg-white/5 border-white/5 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                              
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2 text-slate-500">
+                                  <MessageCircle className="h-4 w-4" />
+                                  <span className="text-[10px] font-black uppercase tracking-widest">{post.replies} Replies</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600">
+                                  <Clock className="h-3.5 w-3.5" /> {post.time}
+                                </div>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-all text-indigo-400">
+                                  <ArrowRight className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                    </SpotlightCard>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-4 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="bg-indigo-600/5 border-indigo-500/10 overflow-hidden relative">
-                <div className="absolute -top-10 -right-10 h-32 w-32 bg-indigo-500 blur-[80px] opacity-20" />
-                <CardContent className="p-5 relative">
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 mb-4">Trending Topics</h4>
-                  <div className="space-y-3">
-                    {categories.map((cat, i) => (
-                      <div key={i} className="flex items-center justify-between group cursor-pointer py-1">
-                        <span className="text-sm text-slate-400 group-hover:text-white transition-colors">{cat.name}</span>
-                        <Badge variant="outline" className="border-slate-800 text-[10px] text-slate-500 group-hover:border-indigo-500/30 group-hover:text-indigo-400 transition-colors">
-                          {cat.count.toLocaleString()}
-                        </Badge>
+          {/* Sidebar Components */}
+          <div className="lg:col-span-4 space-y-10">
+            
+            <div className="space-y-4">
+              <h2 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                <Hash className="h-3 w-3" /> SECTOR_TAGS
+              </h2>
+              <div className="glass-premium p-4 rounded-[2.5rem] space-y-2">
+                {categories.map((cat, i) => {
+                  const CatIcon = cat.icon;
+                  return (
+                    <div key={i} className="group flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-all cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:text-indigo-400 transition-colors">
+                          <CatIcon className="h-4 w-4" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">
+                          {cat.name}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                      <Badge variant="outline" className="border-white/5 bg-white/5 text-[9px] font-black text-slate-500">
+                        {cat.count}
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.35 }}
-            >
-              <Card className="bg-slate-900/50 border-slate-800">
-                <CardContent className="p-5">
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4">Nexus Guidelines</h4>
-                  <ul className="space-y-4 text-xs text-slate-400">
-                    <li className="flex gap-3 italic">
-                      <span className="text-indigo-500 font-bold">01</span>
-                      Always include the SQL dialect (Postgres, MySQL, etc.) in your posts.
-                    </li>
-                    <li className="flex gap-3 italic">
-                      <span className="text-indigo-500 font-bold">02</span>
-                      Sanitize sensitive data before sharing queries.
-                    </li>
-                    <li className="flex gap-3 italic">
-                      <span className="text-indigo-500 font-bold">03</span>
-                      Mark solutions to help others find answers faster.
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <SpotlightCard className="!p-8 rounded-[2.5rem] bg-gradient-to-br from-indigo-600/10 to-blue-600/10 border-indigo-500/20 space-y-6">
+              <div className="space-y-2">
+                <h4 className="text-lg font-black italic tracking-tighter uppercase">Nexus Protocols</h4>
+                <p className="text-slate-400 text-xs leading-relaxed font-medium">
+                  Maintain neural clarity by following sector standards.
+                </p>
+              </div>
+              <div className="space-y-4">
+                {[
+                  "ALWAYS SPECIFY SQL_DIALECT",
+                  "SANITIZE SENSITIVE_STRINGS",
+                  "MARK_SOLVED FOR NETWORK_INDEXING"
+                ].map((rule, i) => (
+                  <div key={i} className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                    <ChevronRight className="h-3 w-3 text-indigo-500" />
+                    {rule}
+                  </div>
+                ))}
+              </div>
+              <Button variant="outline" className="w-full rounded-xl border-indigo-500/30 text-indigo-400 font-black italic uppercase tracking-wider text-[10px] h-12">
+                VIEW FULL PROTOCOLS
+              </Button>
+            </SpotlightCard>
           </div>
         </div>
       </div>

@@ -4,13 +4,28 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, ArrowUpRight, TrendingUp, Crown, Medal, Target, Flame } from "lucide-react";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { 
+  Trophy, 
+  ArrowUpRight, 
+  TrendingUp, 
+  Crown, 
+  Medal, 
+  Target, 
+  Flame, 
+  ShieldCheck,
+  Zap,
+  ArrowRight,
+  User,
+  Star
+} from "lucide-react";
 import { CountUp } from "@/components/ui/count-up";
+import { cn } from "@/lib/utils";
 
 const topUsers = [
-  { rank: 1, name: "SQL_Wizard", points: 15420, solved: 1240, accuracy: 98.2, trend: "up" },
-  { rank: 2, name: "DataQueen", points: 14850, solved: 1190, accuracy: 97.5, trend: "stable" },
-  { rank: 3, name: "QueryMaster", points: 14200, solved: 1150, accuracy: 96.8, trend: "down" },
+  { rank: 1, name: "SQL_Wizard", points: 15420, solved: 1240, accuracy: 98.2, initials: "SW", color: "from-amber-400 to-yellow-600" },
+  { rank: 2, name: "DataQueen", points: 14850, solved: 1190, accuracy: 97.5, initials: "DQ", color: "from-slate-300 to-slate-500" },
+  { rank: 3, name: "QueryMaster", points: 14200, solved: 1150, accuracy: 96.8, initials: "QM", color: "from-orange-400 to-amber-700" },
 ];
 
 const users = [
@@ -23,11 +38,11 @@ const users = [
   { rank: 10, name: "IndexExpert", points: 11900, solved: 950, accuracy: 89.8 },
 ];
 
-const tierBadges: Record<string, { label: string; className: string }> = {
-  grandmaster: { label: "Grandmaster", className: "bg-amber-400 text-amber-950 font-bold" },
-  master: { label: "Master", className: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30" },
-  diamond: { label: "Diamond", className: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
-  platinum: { label: "Platinum", className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+const tierBadges: Record<string, { label: string; className: string; icon: any }> = {
+  grandmaster: { label: "GRANDMASTER", className: "bg-amber-400 text-amber-950", icon: Crown },
+  master: { label: "MASTER", className: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30", icon: ShieldCheck },
+  diamond: { label: "DIAMOND", className: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30", icon: Zap },
+  platinum: { label: "PLATINUM", className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", icon: Star },
 };
 
 function getTier(points: number) {
@@ -39,230 +54,232 @@ function getTier(points: number) {
 
 export default function RanksPage() {
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white py-8 md:py-12 px-4 md:px-6">
-      {/* Background Decor */}
+    <div className="relative min-h-screen bg-[#0B0F19] text-white overflow-x-hidden">
+      {/* Dynamic Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -right-[15%] w-[30%] h-[30%] bg-amber-500/5 rounded-full blur-[120px]" />
-        <div className="absolute top-[60%] -left-[10%] w-[20%] h-[20%] bg-indigo-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-5%] w-[45%] h-[45%] bg-amber-600/10 rounded-full blur-[140px] animate-pulse" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[35%] h-[35%] bg-indigo-600/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto space-y-10">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 space-y-16">
+        
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="space-y-6">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit"
+              className="flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit"
             >
-              <Crown className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Leaderboard</span>
+              <Trophy className="h-4 w-4 text-amber-400" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400">Competitive Sector</span>
             </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="text-4xl md:text-6xl font-black tracking-tighter leading-none italic"
-            >
-              GLOBAL RANKS
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-slate-400 max-w-xl text-lg"
-            >
-              The world&apos;s best SQL developers, ranked by performance.
-            </motion.p>
+            
+            <div className="space-y-2">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] italic uppercase"
+              >
+                THE <span className="text-amber-500 drop-shadow-[0_0_30px_rgba(245,158,11,0.4)]">LEADERBOARD</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+                className="text-slate-400 max-w-xl text-lg md:text-xl font-medium tracking-tight"
+              >
+                Top performing data engineers across the global neural network. Rank is updated in real-time.
+              </motion.p>
+            </div>
           </div>
+
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="flex items-center gap-2 text-xs text-slate-500 bg-slate-900/50 px-4 py-2.5 rounded-full border border-slate-800"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-4 bg-white/5 border border-white/5 p-4 rounded-[2rem] backdrop-blur-md"
           >
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-            Updated every 15 minutes
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Status</p>
+              <p className="text-sm font-black italic tracking-wider uppercase">Network Optimized</p>
+            </div>
           </motion.div>
         </div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
-        >
-          {[
-            { label: "Total Players", value: 8420, icon: Target, color: "text-indigo-500" },
-            { label: "Avg Accuracy", value: 94, suffix: "%", icon: Flame, color: "text-amber-500" },
-            { label: "Problems Solved", value: 52800, icon: Trophy, color: "text-emerald-500" },
-            { label: "This Season", value: 3, suffix: "", prefix: "S", icon: Medal, color: "text-purple-500" },
-          ].map((stat, i) => (
-            <Card key={i} className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-colors">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">{stat.label}</p>
-                    <p className="text-2xl font-black italic tracking-tight">
-                      {stat.prefix || ""}<CountUp to={stat.value} duration={1.5} />{stat.suffix || ""}
-                    </p>
-                  </div>
-                  <stat.icon className={`h-5 w-5 ${stat.color} opacity-30`} />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </motion.div>
-
-        {/* Podium */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+        {/* Podium Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end max-w-5xl mx-auto pt-10">
+          
           {/* 2nd Place */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
             className="order-2 md:order-1"
           >
-            <Card className="bg-slate-900/50 border-slate-800 text-center relative overflow-hidden group hover:border-slate-600 transition-colors">
-              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-slate-500 to-slate-300" />
-              <CardContent className="pt-10 pb-8">
-                <div className="h-16 w-16 rounded-full bg-slate-800 mx-auto mb-4 flex items-center justify-center relative group-hover:ring-2 group-hover:ring-slate-500/30 transition-all">
-                  <span className="text-2xl font-bold">D</span>
-                  <div className="absolute -top-2 -right-2 bg-slate-400 text-slate-950 rounded-full h-7 w-7 flex items-center justify-center text-sm font-bold border-4 border-[#0B0F19]">2</div>
+            <SpotlightCard className="!p-0 rounded-[3rem] bg-slate-900/40 border-white/5 group hover:border-slate-500/30 transition-all duration-500">
+              <div className="p-8 text-center space-y-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-400 to-slate-600" />
+                <div className="relative mx-auto h-24 w-24 rounded-[2rem] bg-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                  <span className="text-3xl font-black italic">{topUsers[1].initials}</span>
+                  <div className="absolute -top-3 -right-3 h-10 w-10 rounded-2xl bg-slate-400 text-slate-950 flex items-center justify-center font-black border-4 border-[#0B0F19]">2</div>
                 </div>
-                <h3 className="text-lg font-bold mb-0.5">DataQueen</h3>
-                <p className="text-slate-400 text-sm mb-3 font-mono">
-                  <CountUp to={14850} duration={1.5} /> pts
-                </p>
-                <Badge variant="outline" className="bg-slate-400/10 text-slate-400 border-slate-400/20 text-[10px]">Silver Tier</Badge>
-              </CardContent>
-            </Card>
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black italic tracking-tighter uppercase">{topUsers[1].name}</h3>
+                  <p className="text-slate-400 font-mono text-sm tracking-widest">{topUsers[1].points.toLocaleString()} PTS</p>
+                </div>
+                <Badge variant="outline" className="rounded-xl px-4 py-1.5 border-slate-500/30 text-slate-400 text-[10px] font-black tracking-widest">MASTER CLASS</Badge>
+              </div>
+            </SpotlightCard>
           </motion.div>
 
           {/* 1st Place */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
             className="order-1 md:order-2"
           >
-            <Card className="bg-slate-900/50 border-amber-500/30 text-center relative overflow-hidden shadow-2xl shadow-amber-500/10 group hover:shadow-amber-500/15 transition-all">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-yellow-300" />
-              {/* Glow effect */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-[40%] bg-amber-500/5 blur-[60px] pointer-events-none" />
-              <CardContent className="pt-14 pb-10 relative">
-                <Trophy className="mx-auto h-7 w-7 text-amber-400 mb-4 drop-shadow-lg" />
-                <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 mx-auto mb-5 flex items-center justify-center relative p-0.5 group-hover:shadow-lg group-hover:shadow-amber-500/20 transition-all">
-                  <div className="h-full w-full rounded-full bg-[#0B0F19] flex items-center justify-center text-2xl font-bold">W</div>
-                  <div className="absolute -top-2 -right-2 bg-amber-400 text-amber-950 rounded-full h-8 w-8 flex items-center justify-center text-sm font-bold border-4 border-[#0B0F19]">1</div>
+            <SpotlightCard className="!p-0 rounded-[3.5rem] bg-slate-900/40 border-amber-500/30 group hover:border-amber-500/50 transition-all duration-500 shadow-[0_0_50px_rgba(245,158,11,0.1)]">
+              <div className="p-10 text-center space-y-8 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-400 to-yellow-600" />
+                <div className="space-y-6">
+                  <div className="relative mx-auto h-32 w-32 rounded-[2.5rem] bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center p-1 group-hover:scale-105 transition-transform duration-500">
+                    <div className="h-full w-full rounded-[2.2rem] bg-[#0B0F19] flex items-center justify-center">
+                      <span className="text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-br from-amber-400 to-yellow-600">{topUsers[0].initials}</span>
+                    </div>
+                    <div className="absolute -top-4 -right-4 h-12 w-12 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center font-black border-4 border-[#0B0F19]">1</div>
+                    <Crown className="absolute -top-12 left-1/2 -translate-x-1/2 h-8 w-8 text-amber-400 drop-shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-3xl font-black italic tracking-tighter uppercase">{topUsers[0].name}</h3>
+                    <p className="text-amber-500 font-black font-mono text-lg tracking-widest">{topUsers[0].points.toLocaleString()} PTS</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-black mb-0.5">SQL_Wizard</h3>
-                <p className="text-amber-500 font-bold mb-4 font-mono">
-                  <CountUp to={15420} duration={1.5} /> pts
-                </p>
-                <Badge className="bg-amber-400 text-amber-950 font-bold px-4 py-1">Grandmaster</Badge>
-              </CardContent>
-            </Card>
+                <Badge className="rounded-2xl px-6 py-2 bg-amber-400 text-amber-950 text-xs font-black tracking-[0.2em]">GRANDMASTER</Badge>
+              </div>
+            </SpotlightCard>
           </motion.div>
 
           {/* 3rd Place */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
             className="order-3"
           >
-            <Card className="bg-slate-900/50 border-amber-900/20 text-center relative overflow-hidden group hover:border-amber-800/30 transition-colors">
-              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-800 to-amber-600" />
-              <CardContent className="pt-10 pb-8">
-                <div className="h-16 w-16 rounded-full bg-slate-800 mx-auto mb-4 flex items-center justify-center relative group-hover:ring-2 group-hover:ring-amber-800/30 transition-all">
-                  <span className="text-2xl font-bold">Q</span>
-                  <div className="absolute -top-2 -right-2 bg-amber-700 text-amber-50 rounded-full h-7 w-7 flex items-center justify-center text-sm font-bold border-4 border-[#0B0F19]">3</div>
+            <SpotlightCard className="!p-0 rounded-[3rem] bg-slate-900/40 border-white/5 group hover:border-orange-800/30 transition-all duration-500">
+              <div className="p-8 text-center space-y-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-amber-800" />
+                <div className="relative mx-auto h-24 w-24 rounded-[2rem] bg-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                  <span className="text-3xl font-black italic">{topUsers[2].initials}</span>
+                  <div className="absolute -top-3 -right-3 h-10 w-10 rounded-2xl bg-amber-700 text-amber-50 flex items-center justify-center font-black border-4 border-[#0B0F19]">3</div>
                 </div>
-                <h3 className="text-lg font-bold mb-0.5">QueryMaster</h3>
-                <p className="text-slate-400 text-sm mb-3 font-mono">
-                  <CountUp to={14200} duration={1.5} /> pts
-                </p>
-                <Badge variant="outline" className="bg-amber-700/10 text-amber-700 border-amber-700/20 text-[10px]">Bronze Tier</Badge>
-              </CardContent>
-            </Card>
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black italic tracking-tighter uppercase">{topUsers[2].name}</h3>
+                  <p className="text-slate-400 font-mono text-sm tracking-widest">{topUsers[2].points.toLocaleString()} PTS</p>
+                </div>
+                <Badge variant="outline" className="rounded-xl px-4 py-1.5 border-amber-800/30 text-amber-700 text-[10px] font-black tracking-widest">ELITE CLASS</Badge>
+              </div>
+            </SpotlightCard>
           </motion.div>
         </div>
 
-        {/* Main Table */}
+        {/* Full Rankings Table */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.6 }}
+          className="relative"
         >
-          <Card className="border-slate-800 bg-slate-900/30 backdrop-blur-sm overflow-hidden">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-800 text-slate-500 bg-slate-900/50">
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Rank</th>
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]">User</th>
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Points</th>
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Solved</th>
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Accuracy</th>
-                      <th className="px-6 py-4 text-left font-bold uppercase tracking-wider text-[10px]">Tier</th>
-                      <th className="px-6 py-4 text-right"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/50">
-                    {users.map((user, i) => {
-                      const tier = getTier(user.points);
-                      return (
-                        <motion.tr
-                          key={user.name}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.35 + i * 0.04 }}
-                          className="hover:bg-slate-800/30 transition-colors group"
-                        >
-                          <td className="px-6 py-4 font-mono font-bold text-slate-500">#{user.rank}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-colors">
-                                {user.name.charAt(0)}
-                              </div>
-                              <span className="font-semibold group-hover:text-white transition-colors">{user.name}</span>
+          <SpotlightCard className="!p-0 rounded-[3rem] bg-slate-900/40 border-white/5 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/5 text-slate-500">
+                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.2em]">Rank Status</th>
+                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.2em]">Operator</th>
+                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.2em]">Neural Power</th>
+                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.2em]">Vectors Solved</th>
+                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.2em]">Precision</th>
+                    <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-[0.2em]">Tier</th>
+                    <th className="px-8 py-6"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {users.map((user, i) => {
+                    const tier = getTier(user.points);
+                    const TierIcon = tier.icon;
+                    return (
+                      <motion.tr
+                        key={user.name}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.7 + i * 0.05 }}
+                        className="group hover:bg-white/[0.02] transition-colors"
+                      >
+                        <td className="px-8 py-6">
+                          <span className="font-mono font-black italic text-slate-600 text-lg group-hover:text-amber-500 transition-colors">
+                            #{user.rank.toString().padStart(2, '0')}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center font-black italic text-xs border border-white/5 group-hover:border-amber-500/30 transition-all">
+                              {user.name.charAt(0)}
                             </div>
-                          </td>
-                          <td className="px-6 py-4 font-mono font-bold text-indigo-400">{user.points.toLocaleString()}</td>
-                          <td className="px-6 py-4 text-slate-400 font-mono">{user.solved.toLocaleString()}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className="h-1.5 w-16 bg-slate-800 rounded-full overflow-hidden">
-                                <motion.div
-                                  className="h-full bg-emerald-500 rounded-full"
-                                  initial={{ width: 0 }}
-                                  whileInView={{ width: `${user.accuracy}%` }}
-                                  viewport={{ once: true }}
-                                  transition={{ duration: 0.8, delay: 0.3 }}
-                                />
-                              </div>
-                              <span className="text-xs text-slate-500 font-mono">{user.accuracy}%</span>
+                            <span className="font-black italic tracking-tight uppercase group-hover:text-white transition-colors">
+                              {user.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <span className="font-mono font-black italic tracking-widest text-indigo-400">
+                            {user.points.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <span className="font-mono font-bold text-slate-500">
+                            {user.solved.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <div className="h-1.5 w-24 bg-slate-800 rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full bg-emerald-500 rounded-full"
+                                initial={{ width: 0 }}
+                                whileInView={{ width: `${user.accuracy}%` }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                              />
                             </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge variant="outline" className={`text-[9px] ${tier.className}`}>{tier.label}</Badge>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <ArrowUpRight className="h-4 w-4 text-slate-500" />
-                            </Button>
-                          </td>
-                        </motion.tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                            <span className="text-[10px] font-black font-mono text-slate-600">{user.accuracy}%</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className={cn("flex items-center gap-2 px-3 py-1.5 rounded-xl border w-fit", tier.className)}>
+                            <TierIcon className="h-3 w-3" />
+                            <span className="text-[9px] font-black tracking-widest">{tier.label}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white/5">
+                            <ArrowRight className="h-4 w-4 text-slate-500" />
+                          </Button>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </SpotlightCard>
         </motion.div>
       </div>
     </div>

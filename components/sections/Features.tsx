@@ -123,7 +123,7 @@ const FEATURES = [
   {
     id: "ai",
     title: "AI Query Assistant",
-    description: "Stuck on a complex join or nested subquery? Ask our AI to explain the logic, suggest performance optimizations, or debug syntax in real-time.",
+    description: "Intelligent query synthesis and optimization. Explain complex logic, suggest performance improvements, or debug syntax in real-time with our neural engine.",
     className: "md:col-span-2 md:row-span-2",
     glowColor: "rgba(99, 102, 241, 0.25)",
     preview: <CodePreview />

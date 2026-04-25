@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
       subtitle={
         isSent
           ? "Transmission Successful"
-          : "Enter your email to reset your password"
+          : "Recover access to your DataTrail learning node"
       }
     >
       {!isSent ? (
@@ -61,56 +61,65 @@ export default function ForgotPasswordPage() {
 
           <Button
             type="submit"
-            className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-white font-black text-lg transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] group relative overflow-hidden"
+            className="w-full h-16 rounded-[2rem] bg-primary text-white font-black text-lg transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] group relative overflow-hidden uppercase tracking-widest italic"
             disabled={isLoading}
           >
-            <span className="relative z-10 flex items-center justify-center gap-2">
+            <span className="relative z-10 flex items-center justify-center gap-3">
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Send Reset Link
-                  <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  Initiate Recovery
+                  <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </>
               )}
             </span>
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Button>
 
           <Link
             href="/login"
-            className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-white transition-colors"
+            className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-primary transition-colors italic"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to login
+            Abort & Return
           </Link>
         </form>
       ) : (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-8 py-4"
+          className="text-center space-y-10 py-6"
         >
-          <div className="p-6 rounded-3xl bg-secondary/10 border border-secondary/20 inline-block">
-            <CheckCircle2 className="w-12 h-12 text-secondary" />
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full" />
+            <div className="relative p-8 rounded-[2.5rem] bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle2 className="w-16 h-16 text-emerald-500" />
+            </div>
           </div>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Override code dispatched to the node <br />
-            <span className="text-white font-bold tracking-tight">{email}</span>
-            .
-          </p>
-          <div className="pt-4 flex flex-col gap-4">
-            <Button
-              variant="outline"
-              className="w-full h-12 rounded-xl border-[#1F2937] bg-white/5 font-bold uppercase tracking-wider text-[10px]"
+          
+          <div className="space-y-4">
+            <p className="text-white/40 text-sm leading-relaxed uppercase tracking-widest font-bold">
+              Override code dispatched <br />
+              to the node
+            </p>
+            <div className="px-6 py-3 rounded-full bg-white/5 border border-white/10 inline-block">
+              <span className="text-primary font-black tracking-widest text-[11px] italic">{email}</span>
+            </div>
+          </div>
+
+          <div className="pt-6 flex flex-col gap-6">
+            <button
+              className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-white transition-colors"
               onClick={() => setIsSent(false)}
             >
               Retry Transmission
-            </Button>
+            </button>
             <Link
               href="/login"
-              className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-white transition-colors"
+              className="flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-[0.4em] text-primary hover:text-white transition-colors italic"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-5 h-5" />
               Return to Port
             </Link>
           </div>

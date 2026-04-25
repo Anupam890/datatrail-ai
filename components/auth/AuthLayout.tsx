@@ -1,111 +1,144 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Database, Sparkles, Terminal } from "lucide-react";
-import { AnimatedText } from "../ui/animated-text";
+import { Database, Sparkles, Terminal, Code2, ShieldCheck, Zap } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen w-full flex bg-[#0B0F19] overflow-hidden">
+    <div className="min-h-screen w-full flex bg-[#0B0F19] overflow-hidden selection:bg-primary/30">
       {/* Left Section - Branding & Visuals (Hidden on Mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative flex-col items-center justify-center p-12 overflow-hidden border-r border-border/50">
-        {/* Animated Background */}
+      <div className="hidden lg:flex lg:w-[45%] relative flex-col items-center justify-center p-12 overflow-hidden border-r border-white/5">
+        {/* Immersive Background */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-1/4 -right-1/4 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-50 mix-blend-overlay" />
+          <div className="absolute top-[-10%] left-[-10%] w-[80%] h-[80%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[80%] h-[80%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
           
-          {/* Floating Grid Pattern */}
-          <div className="absolute inset-0 opacity-20" 
+          {/* Animated Grid */}
+          <div className="absolute inset-0 opacity-[0.03]" 
             style={{ 
-              backgroundImage: 'radial-gradient(circle at 2px 2px, var(--border) 1px, transparent 0)',
-              backgroundSize: '40px 40px'
+              backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+              backgroundSize: '50px 50px'
             }} 
           />
         </div>
 
-        {/* Floating Code Snippets */}
+        {/* Floating Architectural Elements */}
         <motion.div 
-          animate={{ y: [0, -20, 0], rotate: [0, 2, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[20%] right-[10%] p-6 glass border-primary/20 rounded-2xl z-10 w-72 shadow-2xl"
+          animate={{ y: [0, -15, 0], rotate: [0, 1, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[15%] right-[10%] p-5 glass-dark border-white/10 rounded-2xl z-10 w-64 shadow-2xl backdrop-blur-3xl"
         >
-          <div className="flex items-center gap-2 mb-4">
-             <div className="w-2 h-2 rounded-full bg-red-500/50" />
-             <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-             <div className="w-2 h-2 rounded-full bg-green-500/50" />
+          <div className="flex items-center gap-2 mb-3">
+             <div className="w-1.5 h-1.5 rounded-full bg-red-500/40" />
+             <div className="w-1.5 h-1.5 rounded-full bg-yellow-500/40" />
+             <div className="w-1.5 h-1.5 rounded-full bg-green-500/40" />
+             <div className="ml-auto flex items-center gap-1 text-[8px] font-bold text-white/20 uppercase tracking-widest">
+               <Terminal className="w-2.5 h-2.5" /> Live
+             </div>
           </div>
-          <div className="font-mono text-[10px] text-indigo-300 space-y-1">
-             <div className="flex gap-1"><span className="text-primary">SELECT</span><span>*</span></div>
-             <div className="flex gap-1"><span className="text-primary">FROM</span><span>production_data</span></div>
-             <div className="flex gap-1"><span className="text-primary">WHERE</span><span>latency &lt; 100ms;</span></div>
+          <div className="font-mono text-[10px] space-y-1.5">
+             <div className="text-white/40 italic">-- Optimization Suggestion</div>
+             <div className="flex gap-2"><span className="text-primary font-bold">CREATE</span><span className="text-white/60">INDEX</span></div>
+             <div className="flex gap-2"><span className="text-white/60">idx_user_events</span><span className="text-primary font-bold">ON</span></div>
+             <div className="flex gap-2"><span className="text-white/60">analytics.events(user_id);</span></div>
           </div>
         </motion.div>
 
         <motion.div 
-          animate={{ y: [0, 20, 0], rotate: [0, -2, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-[25%] left-[10%] p-6 glass border-secondary/20 rounded-2xl z-10 w-64 shadow-2xl"
+          animate={{ y: [0, 15, 0], rotate: [0, -1, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-[20%] left-[10%] p-5 glass-dark border-white/10 rounded-2xl z-10 w-60 shadow-2xl backdrop-blur-3xl"
         >
-           <div className="flex items-center gap-2 mb-2 text-secondary text-[10px] font-bold uppercase tracking-wider">
-              <Sparkles className="w-3 h-3" />
-              AI Optimization
+           <div className="flex items-center gap-2 mb-3 text-emerald-400 text-[9px] font-black uppercase tracking-widest">
+              <div className="p-1 rounded-md bg-emerald-500/10">
+                <ShieldCheck className="w-3.5 h-3.5" />
+              </div>
+              Schema Verified
            </div>
-           <div className="text-xs text-muted-foreground leading-relaxed">
-              "Add an index to user_id to speed up the join by 45%."
+           <div className="text-[11px] text-white/50 leading-relaxed font-medium">
+              DataTrail ensures your query patterns follow modern production standards.
            </div>
         </motion.div>
 
-        {/* Main Branding Content */}
-        <div className="relative z-20 text-center max-w-lg">
-          <Link href="/">
+        {/* Branding Content */}
+        <div className="relative z-20 text-center max-w-md px-4">
+          <Link href="/" className="inline-block group mb-12">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="inline-flex p-4 rounded-3xl bg-primary/10 border border-primary/20 mb-8 hover:bg-primary/20 transition-colors"
+              className="p-5 rounded-[2rem] bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-all duration-500 group-hover:scale-105 group-hover:rotate-6"
             >
-              <Database className="w-12 h-12 text-primary" />
+              <Database className="w-14 h-14 text-primary" />
             </motion.div>
           </Link>
           
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl font-black text-white mb-6 leading-tight"
-          >
-            Master SQL with <br />
-            <span className="text-gradient">AI Guidance</span>
-          </motion.h2>
-          
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-lg text-muted-foreground leading-relaxed"
-          >
-            Practice, learn, and optimize queries effortlessly with our production-grade datasets and real-time AI architect.
-          </motion.p>
+          <div className="space-y-6">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-5xl font-black text-white leading-[1.1] tracking-tight italic uppercase"
+            >
+              Architect Your <br />
+              <span className="text-gradient">Data Future</span>
+            </motion.h2>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-lg text-white/40 leading-relaxed font-medium"
+            >
+              Join 2,400+ developers mastering the art of high-scale data engineering.
+            </motion.p>
+          </div>
         </div>
 
-        {/* Bottom pattern indicator */}
-        <div className="absolute bottom-12 flex gap-2">
-           {[0,1,2].map(i => (
-             <div key={i} className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-primary' : 'bg-border'}`} />
+        {/* Feature Pills */}
+        <div className="absolute bottom-12 flex gap-4">
+           {[
+             { icon: Zap, label: 'Real-time' },
+             { icon: Code2, label: 'Production' },
+             { icon: Sparkles, label: 'AI Powered' }
+           ].map((f, i) => (
+             <motion.div 
+               key={f.label}
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.5 + i * 0.1 }}
+               className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 text-[9px] font-black text-white/40 uppercase tracking-widest"
+             >
+               <f.icon className="w-3 h-3 text-primary" />
+               {f.label}
+             </motion.div>
            ))}
         </div>
       </div>
 
-      {/* Right Section - Auth Form (Full width on mobile) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 relative">
-        {/* Mobile Background Decoration */}
-        <div className="lg:hidden absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px]" />
-        </div>
+      {/* Right Section - Auth Form */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 md:p-16 relative bg-[#0B0F19]">
+        {/* Background Texture for Right side too */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
         
-        <div className="w-full max-w-md relative z-10">
-          {children}
+        {/* Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="w-full max-w-lg relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            {children}
+          </motion.div>
+
+          <div className="mt-8 text-center">
+            <Link href="/" className="text-[10px] font-bold text-white/20 hover:text-white transition-colors uppercase tracking-[0.3em]">
+              &larr; Back to home
+            </Link>
+          </div>
         </div>
       </div>
     </div>

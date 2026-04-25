@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { 
   Trophy, 
   Star, 
@@ -21,6 +22,12 @@ import {
   CheckCircle,
   Settings,
   Zap,
+  ArrowRight,
+  ShieldCheck,
+  Sparkles,
+  ArrowUpRight,
+  User,
+  Fingerprint,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -38,9 +45,9 @@ import { RecommendedProblems } from "@/components/dashboard/RecommendedProblems"
 import { PlaygroundTab } from "@/components/dashboard/PlaygroundTab";
 
 const achievements = [
-  { id: 1, title: "SQL Ninja", description: "Solved 100 problems", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", threshold: 100 },
-  { id: 2, title: "100 Day Streak", description: "Consistency champion", icon: Star, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20", threshold: 100 },
-  { id: 3, title: "Optimization Guru", description: "Master of efficiency", icon: Medal, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", threshold: 50 },
+  { id: 1, title: "SQL NINJA", description: "SOLVED 100 PROBLEMS", icon: Trophy, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+  { id: 2, title: "100 DAY STREAK", description: "CONSISTENCY CHAMPION", icon: Star, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+  { id: 3, title: "OPTIMIZATION GURU", description: "MASTER OF EFFICIENCY", icon: Medal, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
 ];
 
 type Tab = "overview" | "progress" | "activity" | "playground";
@@ -49,32 +56,17 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 function getRankBadge(xp: number) {
-  if (xp >= 10000) return "Grandmaster";
-  if (xp >= 5000) return "Master";
-  if (xp >= 2000) return "Expert";
-  if (xp >= 500) return "Explorer";
-  if (xp >= 100) return "Apprentice";
-  return "Beginner";
+  if (xp >= 10000) return "GRANDMASTER";
+  if (xp >= 5000) return "MASTER";
+  if (xp >= 2000) return "EXPERT";
+  if (xp >= 500) return "EXPLORER";
+  if (xp >= 100) return "APPRENTICE";
+  return "BEGINNER";
 }
 
 function formatJoinDate(dateStr: string) {
   const date = new Date(dateStr);
-  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-}
-
-function timeAgo(dateStr: string) {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
+  return date.toLocaleDateString(undefined, { month: "long", year: "numeric" }).toUpperCase();
 }
 
 export default function UnifiedProfilePage() {
@@ -95,19 +87,24 @@ export default function UnifiedProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />
-        <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">Loading profile</p>
+      <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <Loader2 className="h-12 w-12 text-indigo-500 animate-spin" />
+          <div className="absolute inset-0 bg-indigo-500/20 blur-xl" />
+        </div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 animate-pulse">Accessing Dossier...</p>
       </div>
     );
   }
 
   if (error || !profileData) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center space-y-4">
-        <h1 className="text-4xl font-black italic text-slate-700">404</h1>
-        <p className="text-slate-500 font-medium tracking-tight">The explorer you&apos;re looking for doesn&apos;t exist.</p>
-        <Button variant="outline" className="border-slate-800 mt-2" onClick={() => window.history.back()}>Go Back</Button>
+      <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center space-y-6">
+        <h1 className="text-8xl font-black italic text-slate-900 tracking-tighter">404</h1>
+        <p className="text-slate-500 font-bold uppercase tracking-widest">Operator Not Found</p>
+        <Button variant="outline" className="rounded-2xl border-slate-800" onClick={() => window.history.back()}>
+          Return to Nexus
+        </Button>
       </div>
     );
   }
@@ -119,225 +116,259 @@ export default function UnifiedProfilePage() {
   
   const displayName = profile?.display_name || profile?.username || (profileUsername || "User").split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white selection:bg-indigo-500/30">
-      {/* Background Decor */}
+    <div className="relative min-h-screen bg-[#0B0F19] text-white overflow-x-hidden">
+      {/* Dynamic Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[120px]" />
-        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] bg-indigo-600/10 rounded-full blur-[140px] animate-pulse" />
+        <div className="absolute bottom-[10%] right-[-10%] w-[35%] h-[35%] bg-purple-600/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-grain opacity-[0.03] pointer-events-none" />
       </div>
 
-      {/* Banner */}
-      <div className="relative h-32 md:h-48 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/50 to-transparent" />
-        <div className="absolute top-[20%] left-[20%] w-[40%] h-[60%] bg-indigo-500/10 rounded-full blur-[80px]" />
-      </div>
-
-      <div className="relative max-w-[1400px] mx-auto px-4 md:px-6 -mt-20 space-y-10 pb-12">
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-8 py-12 space-y-12">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-10">
+        {/* Dossier Header */}
+        <div className="flex flex-col lg:flex-row gap-10 items-start lg:items-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="relative shrink-0"
           >
-            <div className="absolute inset-0 bg-indigo-500 rounded-3xl blur-2xl opacity-20" />
-            <div className="h-28 w-28 md:h-36 md:w-36 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-0.5 shadow-2xl shadow-indigo-500/20 relative z-10">
-              <div className="h-full w-full rounded-[22px] bg-[#0B0F19] flex items-center justify-center text-3xl md:text-5xl font-black italic">
+            <div className="h-32 w-32 md:h-44 md:w-44 rounded-[2.5rem] bg-gradient-to-br from-indigo-500 to-purple-600 p-1 relative z-10">
+              <div className="h-full w-full rounded-[2.2rem] bg-[#0B0F19] flex items-center justify-center text-4xl md:text-6xl font-black italic">
                 {displayName.charAt(0)}
               </div>
             </div>
+            <div className="absolute inset-0 bg-indigo-500/20 blur-[40px] rounded-full" />
+            <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-indigo-400 z-20">
+              <Fingerprint className="h-5 w-5" />
+            </div>
           </motion.div>
 
-          <div className="flex-1 text-center md:text-left space-y-3">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-2">
-                <Badge className="bg-indigo-600 text-white border-none px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{getRankBadge(profile?.xp || 0)}</Badge>
-                {profileData.rank && profileData.totalUsers > 0 && (
-                  <Badge variant="outline" className="border-slate-800 text-slate-400 px-3 py-1 text-[10px] uppercase tracking-wider">
-                    Top {Math.max(1, Math.round((profileData.rank / profileData.totalUsers) * 100))}%
+          <div className="flex-1 space-y-6">
+            <div className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <Badge className="bg-indigo-600 text-white font-black italic tracking-[0.1em] px-4 py-1.5 rounded-xl">
+                  {getRankBadge(profile?.xp || 0)}
+                </Badge>
+                {profileData.rank && (
+                  <Badge variant="outline" className="border-white/10 bg-white/5 text-slate-400 font-black tracking-widest px-4 py-1.5 rounded-xl">
+                    TOP {Math.max(1, Math.round((profileData.rank / (profileData.totalUsers || 1)) * 100))}%
                   </Badge>
                 )}
                 {isOwner && (
-                  <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 text-[10px] uppercase tracking-wider">Your Workspace</Badge>
+                  <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-[10px] font-black tracking-widest text-emerald-400 uppercase">Verified Operator</span>
+                  </div>
                 )}
+              </motion.div>
+              
+              <div className="space-y-1">
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-5xl md:text-7xl font-black tracking-tighter italic uppercase leading-[0.8]"
+                >
+                  {displayName}
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-slate-500 text-lg md:text-xl font-bold tracking-tight"
+                >
+                  @{profileUsername}
+                </motion.p>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter leading-none">{displayName}</h1>
-              <p className="text-slate-500 text-base md:text-lg font-medium mt-1">@{profileUsername}</p>
-            </motion.div>
+            </div>
 
             <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-slate-500"
+              className="flex flex-wrap items-center gap-6"
             >
-              <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Globe className="h-3.5 w-3.5" /> Global Rank: #{profileData.rank ? profileData.rank.toLocaleString() : "N/A"}
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <Globe className="h-4 w-4" /> RANK: #{profileData.rank ? profileData.rank.toLocaleString() : "---"}
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Calendar className="h-3.5 w-3.5" /> Joined {profile?.created_at ? formatJoinDate(profile.created_at) : "recently"}
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <Calendar className="h-4 w-4" /> JOINED: {profile?.created_at ? formatJoinDate(profile.created_at) : "---"}
               </div>
               {isOwner ? (
-                <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg">
-                  <Settings className="h-3.5 w-3.5" /> Edit Profile
+                <Button variant="ghost" size="sm" className="h-10 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-indigo-400 gap-2">
+                  <Settings className="h-3.5 w-3.5" /> Configure Terminal
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg">
-                  <Share2 className="h-3.5 w-3.5" /> Share
+                <Button variant="ghost" size="sm" className="h-10 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest text-indigo-400 gap-2">
+                  <Share2 className="h-3.5 w-3.5" /> Share Profile
                 </Button>
               )}
             </motion.div>
           </div>
 
-          {isOwner && (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="hidden lg:flex items-center gap-6 p-5 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm"
-            >
-              <div className="flex flex-col items-center px-4 border-r border-slate-800">
-                <div className="flex items-center gap-1.5 text-orange-500 mb-1">
-                  <Flame className="h-5 w-5 fill-current" />
-                  <span className="text-2xl font-black italic">
-                    <CountUp to={profile.streak || 0} duration={1.2} />
-                  </span>
+          <div className="hidden xl:grid grid-cols-3 gap-4">
+            {[
+              { label: "STREAK", value: profile.streak || 0, icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10" },
+              { label: "POWER", value: profile.xp || 0, icon: Zap, color: "text-indigo-400", bg: "bg-indigo-400/10" },
+              { label: "NODES", value: profile.total_solved || 0, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+            ].map((stat, i) => (
+              <div key={i} className="glass-premium p-6 rounded-[2rem] flex flex-col items-center justify-center space-y-2 min-w-[120px]">
+                <div className={cn("p-2 rounded-xl mb-1", stat.bg, stat.color)}>
+                  <stat.icon className="h-5 w-5" />
                 </div>
-                <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Day Streak</span>
+                <span className="text-2xl font-black italic tracking-tighter"><CountUp to={stat.value} /></span>
+                <span className="text-[9px] font-black tracking-widest text-slate-500 uppercase">{stat.label}</span>
               </div>
-              <div className="flex flex-col items-center px-4 border-r border-slate-800">
-                <div className="flex items-center gap-1.5 text-indigo-400 mb-1">
-                  <Zap className="h-5 w-5" />
-                  <span className="text-2xl font-black italic">
-                    <CountUp to={profile.xp || 0} duration={1.5} />
-                  </span>
-                </div>
-                <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Points</span>
-              </div>
-              <div className="flex flex-col items-center px-4">
-                <div className="flex items-center gap-1.5 text-emerald-400 mb-1">
-                  <CheckCircle className="h-5 w-5" />
-                  <span className="text-2xl font-black italic">
-                    <CountUp to={profile.total_solved || 0} duration={1.2} />
-                  </span>
-                </div>
-                <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Solved</span>
-              </div>
-            </motion.div>
-          )}
+            ))}
+          </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="flex items-center gap-1 bg-slate-900/50 border border-slate-800 p-1 rounded-2xl overflow-x-auto no-scrollbar w-fit"
-        >
-          {[
-            { id: "overview", label: "Overview", icon: LayoutDashboard },
-            { id: "progress", label: "Progress", icon: TrendingUp },
-            { id: "activity", label: "Activity", icon: History },
-            ...(isOwner ? [{ id: "playground", label: "Playground", icon: Code2 }] : []),
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as Tab)}
-              className={cn(
-                "relative px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 rounded-xl whitespace-nowrap",
-                activeTab === tab.id 
-                  ? "text-white bg-slate-800" 
-                  : "text-slate-500 hover:text-slate-300"
-              )}
-            >
-              <tab.icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          ))}
-        </motion.div>
+        {/* Tab Selection */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-1.5 p-1.5 glass-premium rounded-[2rem] w-fit">
+            {[
+              { id: "overview", label: "OVERVIEW", icon: LayoutDashboard },
+              { id: "progress", label: "PROGRESS", icon: TrendingUp },
+              { id: "activity", label: "LOGS", icon: History },
+              ...(isOwner ? [{ id: "playground", label: "SANDBOX", icon: Code2 }] : []),
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as Tab)}
+                className={cn(
+                  "flex items-center gap-2.5 px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all",
+                  activeTab === tab.id 
+                    ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]" 
+                    : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                )}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          
+          <div className="hidden lg:flex items-center gap-4 px-6 py-3 rounded-[2rem] bg-white/5 border border-white/5">
+            <Sparkles className="h-4 w-4 text-indigo-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">System Link Active</span>
+          </div>
+        </div>
 
-        {/* Content Area */}
-        <div className="min-h-[400px]">
+        {/* Dynamic Content */}
+        <div className="min-h-[500px]">
           <AnimatePresence mode="wait">
             {activeTab === "overview" && (
               <motion.div
                 key="overview"
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                exit={{ opacity: 0, y: -20 }}
                 className="grid grid-cols-1 lg:grid-cols-12 gap-8"
               >
-                <div className="lg:col-span-8 space-y-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <StatCard title="Problems Solved" value={profile.total_solved || 0} icon={CheckCircle} color="emerald" description="Keep pushing!" />
-                    <StatCard title="Accuracy" value={profileData.accuracy ?? 0} suffix="%" icon={Target} color="blue" description={`${profileData.submissions?.length || 0} recent submissions`} />
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
-                      <History className="h-4 w-4 text-indigo-500" /> Consistency
-                    </h3>
-                    <HeatmapGrid data={profileData.heatmapData} />
+                <div className="lg:col-span-8 space-y-12">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <SpotlightCard className="!p-8 rounded-[2.5rem] bg-slate-900/40 border-white/5 group">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                          <CheckCircle className="h-6 w-6" />
+                        </div>
+                        <ArrowUpRight className="h-5 w-5 text-slate-800 group-hover:text-emerald-500 transition-colors" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Nodes Solved</p>
+                        <p className="text-4xl font-black italic tracking-tighter">{profile.total_solved || 0}</p>
+                      </div>
+                    </SpotlightCard>
+
+                    <SpotlightCard className="!p-8 rounded-[2.5rem] bg-slate-900/40 border-white/5 group">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                          <Target className="h-6 w-6" />
+                        </div>
+                        <ArrowUpRight className="h-5 w-5 text-slate-800 group-hover:text-blue-500 transition-colors" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Accuracy Rating</p>
+                        <p className="text-4xl font-black italic tracking-tighter">{profileData.accuracy ?? 0}%</p>
+                      </div>
+                    </SpotlightCard>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2 px-1">
-                      <Star className="h-4 w-4 text-amber-500" /> Achievements
+                  <div className="space-y-6">
+                    <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                      <History className="h-3 w-3" /> NEURAL_ACTIVITY
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <SpotlightCard className="!p-8 rounded-[3rem] bg-slate-900/40 border-white/5">
+                      <HeatmapGrid data={profileData.heatmapData} />
+                    </SpotlightCard>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                      <Star className="h-3 w-3 text-amber-500" /> ACHIEVEMENT_STRIPS
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {achievements.map((ach, i) => (
-                        <motion.div
-                          key={ach.id}
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 + i * 0.06 }}
-                        >
-                          <Card className={`bg-slate-900/30 ${ach.border} hover:bg-slate-900/60 transition-all duration-300 group cursor-default`}>
-                            <CardContent className="p-4 flex items-center gap-3">
-                              <div className={`h-11 w-11 rounded-xl ${ach.bg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                                <ach.icon className={`h-5 w-5 ${ach.color}`} />
-                              </div>
-                              <div className="min-w-0">
-                                <h4 className="font-bold text-sm truncate">{ach.title}</h4>
-                                <p className="text-[10px] text-slate-500 truncate">{ach.description}</p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
+                        <SpotlightCard key={ach.id} className="group !p-6 rounded-[2rem] bg-slate-900/40 border-white/5">
+                          <div className="flex items-center gap-4">
+                            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform", ach.bg, ach.color)}>
+                              <ach.icon className="h-6 w-6" />
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className="text-[11px] font-black italic tracking-tight uppercase group-hover:text-white transition-colors">{ach.title}</h4>
+                              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{ach.description}</p>
+                            </div>
+                          </div>
+                        </SpotlightCard>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="lg:col-span-4 space-y-6">
+                <div className="lg:col-span-4 space-y-12">
                   {isOwner ? (
                     <>
-                      <DailyChallenge challenge={profileData.dailyChallenge} />
-                      <RecommendedProblems problems={profileData.recommendedProblems} />
+                      <div className="space-y-6">
+                        <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                          <Zap className="h-3 w-3" /> DAILY_DIRECTIVE
+                        </h3>
+                        <DailyChallenge challenge={profileData.dailyChallenge} />
+                      </div>
+                      <div className="space-y-6">
+                        <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                          <Sparkles className="h-3 w-3" /> RECOMMENDED_VECTORS
+                        </h3>
+                        <RecommendedProblems problems={profileData.recommendedProblems} />
+                      </div>
                     </>
                   ) : (
-                    <Card className="bg-indigo-600/5 border-indigo-500/10 overflow-hidden relative">
-                      <div className="absolute -top-10 -right-10 h-32 w-32 bg-indigo-500 blur-[80px] opacity-20" />
-                      <CardContent className="p-6 text-center space-y-4 relative">
-                        <div className="space-y-1">
-                          <h2 className="text-lg font-bold">Join the SQL Elite</h2>
-                          <p className="text-slate-500 text-xs">Master database engineering with SQLArena.</p>
-                        </div>
-                        <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl h-11 shadow-lg shadow-indigo-500/20">
-                          Enter the Arena
-                        </Button>
-                      </CardContent>
-                    </Card>
+                    <SpotlightCard className="!p-10 rounded-[3rem] bg-gradient-to-br from-indigo-600/10 to-blue-600/10 border-indigo-500/20 text-center space-y-6">
+                      <div className="mx-auto h-16 w-16 rounded-[2rem] bg-indigo-500/20 flex items-center justify-center">
+                        <User className="h-8 w-8 text-indigo-400" />
+                      </div>
+                      <div className="space-y-2">
+                        <h2 className="text-2xl font-black italic tracking-tighter uppercase">Join the Elite</h2>
+                        <p className="text-slate-400 text-xs font-bold leading-relaxed">
+                          Build your own dossier and compete in the global SQL arena.
+                        </p>
+                      </div>
+                      <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black italic uppercase tracking-widest h-12 rounded-xl">
+                        START YOUR TRAIL
+                      </Button>
+                    </SpotlightCard>
                   )}
-                  <LeaderboardPreview users={profileData.leaderboard} />
+                  
+                  <div className="space-y-6">
+                    <h3 className="px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 flex items-center gap-2">
+                      <Trophy className="h-3 w-3" /> PEER_COMPARISON
+                    </h3>
+                    <LeaderboardPreview users={profileData.leaderboard} />
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -345,10 +376,9 @@ export default function UnifiedProfilePage() {
             {activeTab === "progress" && (
               <motion.div
                 key="progress"
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-8"
+                exit={{ opacity: 0, y: -20 }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   <SkillProgress skills={profileData.skills} />
@@ -359,20 +389,22 @@ export default function UnifiedProfilePage() {
             {activeTab === "activity" && (
               <motion.div
                 key="activity"
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                exit={{ opacity: 0, y: -20 }}
               >
-                <SubmissionTable submissions={profileData.submissions} />
+                <SpotlightCard className="!p-0 rounded-[3rem] bg-slate-900/40 border-white/5 overflow-hidden">
+                  <SubmissionTable submissions={profileData.submissions} />
+                </SpotlightCard>
               </motion.div>
             )}
 
             {activeTab === "playground" && isOwner && (
               <motion.div
                 key="playground"
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                exit={{ opacity: 0, y: -20 }}
               >
                 <PlaygroundTab />
               </motion.div>

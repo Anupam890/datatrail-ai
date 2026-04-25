@@ -49,7 +49,7 @@ export default function LoginPage() {
   return (
     <AuthCard 
       title="Welcome Back" 
-      subtitle="Login to continue your SQL journey"
+      subtitle="Login to continue your data engineering journey"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <InputField
@@ -69,7 +69,7 @@ export default function LoginPage() {
             required
           />
           <div className="flex justify-end pr-1">
-            <Link href="/forgot-password" title="Recover Access" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/forgot-password" title="Recover Access" className="text-[9px] font-black uppercase tracking-widest text-white/20 hover:text-primary transition-colors">
               Forgot password?
             </Link>
           </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-bold uppercase tracking-wider text-center"
+            className="p-4 rounded-2xl bg-destructive/5 border border-destructive/10 text-destructive text-[10px] font-black uppercase tracking-widest text-center"
           >
             {error}
           </motion.div>
@@ -87,16 +87,16 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-white font-black text-lg transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
+          className="w-full h-16 rounded-[2rem] bg-primary text-white font-black text-lg transition-all hover:shadow-[0_0_40px_rgba(99,102,241,0.4)] hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden uppercase tracking-widest italic"
           disabled={isLoading}
         >
-           <span className="relative z-10 flex items-center justify-center gap-2">
+           <span className="relative z-10 flex items-center justify-center gap-3">
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Login
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Authenticate
+                  <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
            </span>
@@ -106,18 +106,18 @@ export default function LoginPage() {
 
       <div className="relative my-10">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#1F2937]" />
+          <div className="w-full border-t border-white/5" />
         </div>
-        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-          <span className="bg-[#111827] px-4 text-muted-foreground/60">Or continue with</span>
+        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em]">
+          <span className="bg-[#0B0F19] px-6 text-white/20">Secured Access</span>
         </div>
       </div>
 
       <OAuthButton />
 
       <AuthFooter 
-        text="Don't have an account?" 
-        linkText="Sign up" 
+        text="New to the trail?" 
+        linkText="Join the waitlist" 
         href="/signup" 
       />
     </AuthCard>
