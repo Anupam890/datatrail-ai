@@ -12,6 +12,7 @@ export interface Problem {
   description: string;
   difficulty: "easy" | "medium" | "hard";
   topic: string;
+  language: "sql" | "python" | "pandas";
   starterCode: string;
   sampleDataSql: string;
   expectedOutput: Record<string, unknown>[];

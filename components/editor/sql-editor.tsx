@@ -63,6 +63,12 @@ export function SQLEditor({
               { token: "number", foreground: "fbbf24" },
               { token: "comment", foreground: "64748b", fontStyle: "italic" },
               { token: "identifier", foreground: "e2e8f0" },
+              // Python-specific tokens
+              { token: "keyword.python", foreground: "818cf8", fontStyle: "bold" },
+              { token: "type.identifier.python", foreground: "38bdf8" },
+              { token: "delimiter.python", foreground: "94a3b8" },
+              { token: "decorator.python", foreground: "f472b6", fontStyle: "italic" },
+              { token: "string.escape.python", foreground: "fbbf24" },
             ],
             colors: {
               "editor.background": "#0B0F1900", // Transparent

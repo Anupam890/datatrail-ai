@@ -322,6 +322,25 @@ export default function ArenaProblemPage() {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 
+  // Derive effective language from problem tags
+  const effectiveLanguage = useMemo(() => {
+    if (!problem?.tags) return "sql";
+    if (problem.tags.includes("pandas")) return "pandas";
+    if (problem.tags.includes("python")) return "python";
+    return "sql";
+  }, [problem?.tags]);
+
+  // Sync selectedLanguage when problem loads
+  useEffect(() => {
+    if (effectiveLanguage !== "sql") {
+      setSelectedLanguage(effectiveLanguage === "pandas" ? "python" : effectiveLanguage);
+    } else {
+      setSelectedLanguage("sql");
+    }
+  }, [effectiveLanguage]);
+
+  const isPythonProblem = effectiveLanguage === "python" || effectiveLanguage === "pandas";
+
   // Fetch Community Solutions
   const { data: solutions, refetch: refetchSolutions } = useQuery({
     queryKey: ["solutions", problemSlug],
@@ -344,18 +363,60 @@ export default function ArenaProblemPage() {
     enabled: !!session?.user,
   });
 
-  // ─── Run: Execute locally in sql.js sandbox ────────────────────────────
-  const handleRun = useCallback(() => {
-    if (!code.trim() || !ready) return;
+  // ─── Run: Execute locally (SQL) or via Piston (Python/Pandas) ──────────
+  const handleRun = useCallback(async () => {
+    if (!code.trim()) return;
     setLoading(true);
     setSubmitted(false);
     setSubmitResult(null);
 
-    // Run in client-side sandbox
-    const queryResult = runQuery(code.trim());
-    setResult(queryResult);
+    if (isPythonProblem && problem) {
+      // Python/Pandas: call server-side Piston in "run" mode
+      try {
+        const res = await fetch("/api/execute/python", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            problemId: problem.id,
+            code: code.trim(),
+            language: effectiveLanguage as "python" | "pandas",
+            mode: "run",
+          }),
+        });
+        const data = await res.json();
+
+        if (data.result) {
+          setResult({
+            columns: data.result.columns || [],
+            rows: data.result.rows || [],
+            executionTimeMs: data.executionTime || 0,
+            error: data.error,
+          });
+        } else if (data.error) {
+          setResult({
+            columns: [],
+            rows: [],
+            executionTimeMs: 0,
+            error: typeof data.error === "string" ? data.error : JSON.stringify(data.error),
+          });
+        }
+      } catch {
+        setResult({
+          columns: [],
+          rows: [],
+          executionTimeMs: 0,
+          error: "Failed to execute code. Check your connection.",
+        });
+      }
+    } else {
+      // SQL: run in client-side sandbox
+      if (!ready) return;
+      const queryResult = runQuery(code.trim());
+      setResult(queryResult);
+    }
+
     setLoading(false);
-  }, [code, ready, runQuery]);
+  }, [code, ready, runQuery, isPythonProblem, problem, effectiveLanguage]);
 
   // ─── Submit: Send to server for validation + logging ───────────────────
   const handleSubmit = useCallback(async () => {
@@ -366,25 +427,40 @@ export default function ArenaProblemPage() {
     setResult(null);
 
     try {
-      const res = await fetch("/api/execute", {
+      // Route to the right execution endpoint based on language
+      const endpoint = isPythonProblem ? "/api/execute/python" : "/api/execute";
+      const body = isPythonProblem
+        ? {
+            problemId: problem.id,
+            code: code.trim(),
+            language: effectiveLanguage as "python" | "pandas",
+            mode: "submit",
+          }
+        : {
+            problemId: problem.id,
+            query: code.trim(),
+          };
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          problemId: problem.id,
-          query: code.trim(),
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
 
       // Show the result table from server
       if (data.result) {
-        const columns =
-          Array.isArray(data.result) && data.result.length > 0
+        // Python API returns { columns, rows }, SQL API returns a raw array
+        const isPythonResult = data.result.columns && data.result.rows;
+        const columns = isPythonResult
+          ? data.result.columns
+          : Array.isArray(data.result) && data.result.length > 0
             ? Object.keys(data.result[0])
             : [];
+        const rows = isPythonResult ? data.result.rows : data.result || [];
         setResult({
           columns,
-          rows: data.result || [],
+          rows,
           expected: data.expected || [],
           executionTimeMs: data.executionTime || 0,
           error: data.error,
@@ -447,7 +523,7 @@ export default function ArenaProblemPage() {
     } finally {
       setLoading(false);
     }
-  }, [code, problem]);
+  }, [code, problem, isPythonProblem, effectiveLanguage]);
 
   // ─── Hints: AI-powered progressive hints ───────────────────────────────
   const handleHint = useCallback(async () => {
@@ -618,8 +694,8 @@ export default function ArenaProblemPage() {
                <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleRun}
-                  disabled={loading || !ready}
+                   onClick={handleRun}
+                  disabled={loading || (!isPythonProblem && !ready)}
                   className="h-7 px-3 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-white/5 gap-2"
                 >
                   {loading && !submitted ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3 fill-indigo-400 text-indigo-400" />}

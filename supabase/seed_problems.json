@@ -960,7 +960,8 @@
     "title": "Filter High Sales",
     "slug": "pandas-filter-high-sales",
     "difficulty": "easy",
-    "description": "Given a DataFrame 'df' with columns ['product', 'sales', 'region'], filter for rows where sales > 1000 and region is 'North'.",
+    "language": "pandas",
+    "description": "Given a DataFrame 'df' with columns ['product', 'sales', 'region'], filter for rows where sales > 1000 and region is 'North'. Assign the filtered DataFrame to a variable called `result`.",
     "schema_json": {
       "df": "product TEXT, sales INT, region TEXT"
     },
@@ -980,7 +981,8 @@
     "title": "Group By Mean",
     "slug": "pandas-group-by-mean",
     "difficulty": "easy",
-    "description": "Calculate the mean 'salary' for each 'department' from a DataFrame 'df'.",
+    "language": "pandas",
+    "description": "Calculate the mean 'salary' for each 'department' from a DataFrame 'df'. Assign the resulting DataFrame to a variable called `result`.",
     "schema_json": {
       "df": "employee_id INT, department TEXT, salary FLOAT"
     },
