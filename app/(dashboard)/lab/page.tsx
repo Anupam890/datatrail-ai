@@ -118,7 +118,7 @@ function CircularProgress({ percentage, color, size = 64 }: { percentage: number
           initial={{ strokeDashoffset: circumference }}
           whileInView={{ strokeDashoffset: offset }}
           viewport={{ once: true }}
-          transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] as any }}
           strokeDasharray={circumference}
         />
       </svg>
@@ -205,7 +205,7 @@ function TrackCard({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }}
               className="bg-black/20 border-t border-white/5"
             >
               <div className="p-4 space-y-1">
@@ -316,7 +316,7 @@ export default function LabPage() {
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as any }}
                 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] italic uppercase"
               >
                 THE <span className="text-blue-500 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)]">LAB</span>

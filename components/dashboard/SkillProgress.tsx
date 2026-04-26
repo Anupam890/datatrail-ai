@@ -73,7 +73,7 @@ export function SkillProgress({ skills }: { skills?: Skill[] }) {
                   strokeDasharray="100, 100"
                   initial={{ strokeDasharray: "0, 100" }}
                   animate={{ strokeDasharray: `${skill.percentage}, 100` }}
-                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.1 }}
+                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] as any, delay: index * 0.1 }}
                   strokeLinecap="round"
                   transform="rotate(-90 18 18)"
                 />

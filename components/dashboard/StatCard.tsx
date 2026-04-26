@@ -39,7 +39,7 @@ export function StatCard({
     const controls = animate(0, value, {
       duration: 1.5,
       onUpdate: (latest) => setDisplayValue(Math.floor(latest)),
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as any,
     });
     return () => controls.stop();
   }, [value]);
@@ -49,7 +49,7 @@ export function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }}
       className="group relative overflow-hidden rounded-[2rem] border border-white/5 bg-slate-900/40 p-8 shadow-2xl backdrop-blur-xl transition-all hover:border-white/10"
     >
       <div className="flex items-start justify-between relative z-10">

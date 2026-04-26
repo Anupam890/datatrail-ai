@@ -32,6 +32,7 @@ import {
   BookOpen,
   Database,
   Terminal,
+  List,
   MessageSquare,
   CheckCircle2,
   Clock,
@@ -295,7 +296,6 @@ function PracticePhase() {
     tableName,
     questions,
     activeQuestion,
-    selectQuestion,
     analysis,
     aiHelp,
     isAiHelpLoading,
@@ -432,7 +432,7 @@ function PracticePhase() {
   }, [handleRun, handleSubmit]);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: colors.background.main }}>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundColor: colors.background.DEFAULT }}>
       {/* ─── Header ─── */}
       <header 
         className="h-12 border-b flex items-center justify-between px-4 shrink-0"
@@ -716,7 +716,7 @@ function PracticePhase() {
         </div>
 
         {/* Right */}
-        <div className="flex-1 flex flex-col" style={{ backgroundColor: colors.background.main }}>
+        <div className="flex-1 flex flex-col" style={{ backgroundColor: colors.background.DEFAULT }}>
           {/* 1. Editor Header - Label Bar */}
           <div 
             className="h-9 border-b flex items-center px-4 shrink-0"

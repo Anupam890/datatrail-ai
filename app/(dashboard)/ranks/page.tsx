@@ -93,7 +93,7 @@ export default function RanksPage() {
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as any }}
                 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] italic uppercase"
               >
                 THE <span className="text-amber-500 drop-shadow-[0_0_30px_rgba(245,158,11,0.4)]">LEADERBOARD</span>

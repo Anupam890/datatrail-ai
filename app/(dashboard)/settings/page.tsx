@@ -60,7 +60,7 @@ export default function SettingsPage() {
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as any }}
               className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] italic uppercase"
             >
               SYSTEM <span className="text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">SETTINGS</span>
@@ -160,7 +160,7 @@ export default function SettingsPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }}
               >
                 <SpotlightCard className="!p-10 md:!p-16 rounded-[3.5rem] bg-slate-900/40 border-white/5 min-h-[600px] shadow-2xl backdrop-blur-xl">
                   {activeTab === "profile" && <ProfileSection />}

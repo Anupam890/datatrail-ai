@@ -97,8 +97,8 @@ function Hint({
   align?: "start" | "center" | "end";
 }) {
   return (
-    <Tooltip delayDuration={300}>
-      <TooltipTrigger render={children} />
+    <Tooltip>
+      <TooltipTrigger delay={300} render={children} />
       <TooltipContent 
         side={side} 
         align={align}
@@ -125,6 +125,7 @@ interface ProblemData {
   description: string;
   schema_json: Record<string, string>;
   sample_data_json: Record<string, Record<string, unknown>[]>;
+  expected_output_json?: any[];
   tags: string[];
   likes_count: number;
   dislikes_count: number;

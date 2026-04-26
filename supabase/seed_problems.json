@@ -955,5 +955,46 @@
       { "name": "U1", "total_spent": 1000.0 }
     ],
     "tags": ["window-functions", "percent_rank", "ctes"]
+  },
+  {
+    "title": "Filter High Sales",
+    "slug": "pandas-filter-high-sales",
+    "difficulty": "easy",
+    "description": "Given a DataFrame 'df' with columns ['product', 'sales', 'region'], filter for rows where sales > 1000 and region is 'North'.",
+    "schema_json": {
+      "df": "product TEXT, sales INT, region TEXT"
+    },
+    "sample_data_json": {
+      "df": [
+        { "product": "A", "sales": 1200, "region": "North" },
+        { "product": "B", "sales": 800, "region": "North" },
+        { "product": "C", "sales": 1500, "region": "South" }
+      ]
+    },
+    "expected_output_json": [
+      { "product": "A", "sales": 1200, "region": "North" }
+    ],
+    "tags": ["pandas", "filtering", "dataframe"]
+  },
+  {
+    "title": "Group By Mean",
+    "slug": "pandas-group-by-mean",
+    "difficulty": "easy",
+    "description": "Calculate the mean 'salary' for each 'department' from a DataFrame 'df'.",
+    "schema_json": {
+      "df": "employee_id INT, department TEXT, salary FLOAT"
+    },
+    "sample_data_json": {
+      "df": [
+        { "employee_id": 1, "department": "HR", "salary": 50000.0 },
+        { "employee_id": 2, "department": "Tech", "salary": 80000.0 },
+        { "employee_id": 3, "department": "HR", "salary": 60000.0 }
+      ]
+    },
+    "expected_output_json": [
+      { "department": "HR", "salary": 55000.0 },
+      { "department": "Tech", "salary": 80000.0 }
+    ],
+    "tags": ["pandas", "group-by", "aggregation"]
   }
 ]
